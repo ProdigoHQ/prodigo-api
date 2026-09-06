@@ -1,4 +1,4 @@
-package com.licode.prodigoerp.common.security;
+package com.licode.prodigoerp.common.config;
 
 import java.util.UUID;
 

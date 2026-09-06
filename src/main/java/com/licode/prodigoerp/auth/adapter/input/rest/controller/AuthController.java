@@ -14,6 +14,7 @@ import com.licode.prodigoerp.auth.application.port.output.TokenGeneratorPort;
 import com.licode.prodigoerp.auth.domain.model.RefreshToken;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.NotFoundException;
+import com.licode.prodigoerp.common.config.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -119,6 +120,9 @@ public class AuthController {
     public ResponseEntity<Void> logout(@CookieValue("refresh_token") String refreshToken) {
 
         refreshTokenUseCase.logout(refreshToken);
+
+        // Clear the current Tenant in the TenantContext
+        TenantContext.clearCurrentTenant();
 
         ResponseCookie responseCookie = ResponseCookie.from("refresh_token", null)
                 .httpOnly(true)

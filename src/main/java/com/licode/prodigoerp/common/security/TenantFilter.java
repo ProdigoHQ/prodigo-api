@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.common.security;
 
+import com.licode.prodigoerp.common.config.TenantContext;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.tenant.application.port.output.TenantQueryPort;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
@@ -49,6 +50,8 @@ public class TenantFilter extends OncePerRequestFilter {
             if(isExist.isEmpty()){
                 throw new NotFoundException("Tenant not found with id " + tenantId + ", Access Denied.");
             }
+
+            // TODO : need to get the current user and check if he/she belongs to the Tenant provided
 
             // Set the currentTenant to the Tenant Context
             TenantContext.setCurrentTenant(tenantUuid);
