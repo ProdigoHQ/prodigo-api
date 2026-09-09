@@ -16,6 +16,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -72,9 +73,10 @@ public class TenantFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        List<String> paths = publicPaths;
+        List<String> paths = new ArrayList<>(publicPaths);
 
-        paths.addLast("/api/1.0/s/admin/**");
+//        paths.addLast("/api/1.0/s/admin/**");
+        paths.add("/api/1.0/s/admin/**");
 
         return paths.stream().anyMatch(publicPath ->
                 pathMatcher.match(publicPath, path));
