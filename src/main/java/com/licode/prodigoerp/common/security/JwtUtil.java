@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -78,14 +79,14 @@ public class JwtUtil {
         }
     }
 
-    public Long getUserIdFromToken(String token) {
+    public UUID getUserIdFromToken(String token) {
 
         try {
             Claims claims = Jwts.parser().verifyWith(key).build()
                     .parseSignedClaims(token)
                     .getPayload();
 
-            return claims.get("userId",  Long.class);
+            return parseUuid(claims.get("userId",  String.class));
         } catch (ExpiredJwtException e) {
             throw new JwtValidationException("Token expired", e);
         } catch (JwtException | IllegalArgumentException e) {
@@ -93,14 +94,14 @@ public class JwtUtil {
         }
     }
 
-    public Long getTenantIdFromToken(String token) {
+    public UUID getTenantIdFromToken(String token) {
 
         try {
             Claims claims = Jwts.parser().verifyWith(key).build()
                     .parseSignedClaims(token)
                     .getPayload();
 
-            return claims.get("tenantId",  Long.class);
+            return parseUuid(claims.get("tenantId",  String.class));
         } catch (ExpiredJwtException e) {
             throw new JwtValidationException("Token expired", e);
         } catch (JwtException | IllegalArgumentException e) {
@@ -135,6 +136,17 @@ public class JwtUtil {
             throw new JwtValidationException("Token expired", e);
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtValidationException("Invalid token", e);
+        }
+    }
+
+    public UUID parseUuid(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return UUID.fromString(value);
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException("Invalid UUID claim in JWT: " + value, e);
         }
     }
 
