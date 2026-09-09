@@ -22,6 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,10 +81,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         ).map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 
         JwtPrincipal principal = new JwtPrincipal(
-                claims.get("userId", Long.class),
+                claims.get("userId", UUID.class),
                 claims.get("username", String.class),
                 claims.get("email", String.class),
-                claims.get("tenantId", Long.class),
+                claims.get("tenantId", UUID.class),
                 claims.get("tenantSlug", String.class)
         );
 

@@ -1,9 +1,11 @@
 package com.licode.prodigoerp.common.security.dto;
 
+import java.util.UUID;
+
 public record JwtPrincipal(
-        Long userId,
+        UUID userId,
         String username,
         String email,
-        Long tenantId,
+        UUID tenantId,
         String tenantSlug
 ) {}

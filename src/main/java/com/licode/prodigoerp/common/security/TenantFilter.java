@@ -1,5 +1,7 @@
 package com.licode.prodigoerp.common.security;
 
+import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
+import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.config.TenantContext;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.tenant.application.port.output.TenantQueryPort;
@@ -28,6 +30,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final TenantQueryPort tenantQueryPort;
+    private final LoadUserPort loadUserPort;
 
     @Qualifier("publicPaths")
     private final List<String> publicPaths;
@@ -42,20 +45,17 @@ public class TenantFilter extends OncePerRequestFilter {
             return;
         }
 
-        // then we need to find if there is a tenant with the id provided
+       // Then we need to find if the connected user exist in the tenant
         try{
             UUID tenantUuid = UUID.fromString(tenantId);
+            UUID userId = SecurityUtils.getCurrentUser().userId();
 
-            Optional<Tenant> isExist = tenantQueryPort.findTenantById(tenantUuid);
-
-            if(isExist.isEmpty()){
-                throw new NotFoundException("Tenant not found with id " + tenantId + ", Access Denied.");
-            }
-
-            // TODO : need to get the current user and check if he/she belongs to the Tenant provided
+            User existUser = loadUserPort.findUserByIdAndTenantId(userId, tenantUuid).orElseThrow(
+                    () -> new NotFoundException("Access Denied:: User not found with id: " + userId + " in the Tenant with id: " + tenantId)
+            );
 
             // Set the currentTenant to the Tenant Context
-            TenantContext.setCurrentTenant(tenantUuid);
+            TenantContext.setCurrentTenant(existUser.getTenant().getId());
 
         }catch (NotFoundException ex){
             TenantContext.clearCurrentTenant();

@@ -34,6 +34,11 @@ public class UserPersistenceAdapter implements SaveUserPort, LoadUserPort {
     }
 
     @Override
+    public Optional<User> findUserByIdAndTenantId(UUID id, UUID tenantId) {
+        return jpaUserRepository.findByIdAndTenant_Id(id, tenantId).map(UserJpaMapper::toDomainModel);
+    }
+
+    @Override
     @Transactional
     public User save(User user) {
         UserJpaEntity userJpaEntity = jpaUserRepository.save(UserJpaMapper.toJpaEntity(user));
