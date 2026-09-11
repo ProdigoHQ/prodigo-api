@@ -4,8 +4,6 @@ import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.config.TenantContext;
 import com.licode.prodigoerp.common.exception.NotFoundException;
-import com.licode.prodigoerp.tenant.application.port.output.TenantQueryPort;
-import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -29,7 +26,6 @@ import java.util.UUID;
 public class TenantFilter extends OncePerRequestFilter {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-    private final TenantQueryPort tenantQueryPort;
     private final LoadUserPort loadUserPort;
 
     @Qualifier("publicPaths")
@@ -41,8 +37,7 @@ public class TenantFilter extends OncePerRequestFilter {
         String tenantId = request.getHeader("X-Tenant-Id");
 
         if(tenantId == null || tenantId.isEmpty() || tenantId.equalsIgnoreCase("null")) {
-            filterChain.doFilter(request, response);
-            return;
+           throw new NotFoundException("No Tenant Id found in the request");
         }
 
        // Then we need to find if the connected user exist in the tenant
@@ -57,6 +52,8 @@ public class TenantFilter extends OncePerRequestFilter {
             // Set the currentTenant to the Tenant Context
             TenantContext.setCurrentTenant(existUser.getTenant().getId());
 
+            filterChain.doFilter(request, response);
+
         }catch (NotFoundException ex){
             TenantContext.clearCurrentTenant();
             response.sendError(HttpServletResponse.SC_NOT_FOUND, ex.getMessage());
@@ -65,9 +62,9 @@ public class TenantFilter extends OncePerRequestFilter {
             TenantContext.clearCurrentTenant();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
             return;
+        }finally {
+            TenantContext.clearCurrentTenant();
         }
-
-        filterChain.doFilter(request, response);
     }
 
     @Override
@@ -75,7 +72,6 @@ public class TenantFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         List<String> paths = new ArrayList<>(publicPaths);
 
-//        paths.addLast("/api/1.0/s/admin/**");
         paths.add("/api/1.0/s/admin/**");
 
         return paths.stream().anyMatch(publicPath ->

@@ -81,7 +81,6 @@ public class AuthController {
 
         String tenantSlug = user.get().getTenant() == null ? null : user.get().getTenant().getSlug();
 
-        // TODO: Load the user roles and permissions here
         List<String> roles = roleQueryPort.findActiveRoleNames(user.get().getId());
         List<String> permissions = roleQueryPort.findActivePermissionCodes(user.get().getId());
 

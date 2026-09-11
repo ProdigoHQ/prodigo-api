@@ -104,7 +104,7 @@ public class UserService implements RegisterUserUseCase {
 
 
         // here is the Admin role ( for the company (tenant) creating the account)
-        // there will be duplicate ADMIN roles here but diff Tenant TODO : need
+        // there will be duplicate ADMIN roles here but diff Tenant
         Role adminRole = saveAuthoritiesUseCase.saveRole(
                 new CreateRoleCommand(
                         "ADMIN",
