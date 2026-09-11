@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface TenantModuleQueryPort {
     List<Module> findAllActiveModulesByTenantId(UUID tenantId);
+    List<Module> findAllAvailableModulesToPay(UUID tenantId);
 }

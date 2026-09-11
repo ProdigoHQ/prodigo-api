@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface TenantModuleUseCase {
     List<ShowPublicModuleCommand> findAllActiveModulesByTenantId(UUID tenantId);
+
+    List<ShowPublicModuleCommand> findAllAvailableModulesToPay(UUID tenantId);
 }

@@ -22,4 +22,11 @@ public class TenantModuleAdapter implements TenantModuleQueryPort {
 
         return allActiveModules.stream().map(ModuleJpaMapper::toDomainModel).toList();
     }
+
+    @Override
+    public List<Module> findAllAvailableModulesToPay(UUID tenantId) {
+       List<ModuleJpaEntity> allAvailableModules = jpaTenantRepository.findModuleWhereTenantIdNotEquals(tenantId);
+
+       return allAvailableModules.stream().map(ModuleJpaMapper::toDomainModel).toList();
+    }
 }

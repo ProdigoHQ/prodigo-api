@@ -31,4 +31,21 @@ public class TenantModuleService implements TenantModuleUseCase {
                 )
         ).toList();
     }
+
+    @Override
+    public List<ShowPublicModuleCommand> findAllAvailableModulesToPay(UUID tenantId) {
+
+        List<Module> modules = tenantModuleQueryPort.findAllAvailableModulesToPay(tenantId);
+
+        return modules.stream().map(
+                module -> new ShowPublicModuleCommand(
+                        module.getId(),
+                        module.getName(),
+                        module.getDescription(),
+                        module.getModuleKey(),
+                        module.getPrice(),
+                        module.getCurrency()
+                )
+        ).toList();
+    }
 }

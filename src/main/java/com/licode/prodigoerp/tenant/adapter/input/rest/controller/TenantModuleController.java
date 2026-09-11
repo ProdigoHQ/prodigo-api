@@ -31,6 +31,19 @@ public class TenantModuleController {
                                 moduleWebMapper::toShowPublicModuleDto
                         ).toList()
         );
+    }
 
+    // this endpoint get all available modules that the current Tenant doesn't have
+    @GetMapping(path = "/available", version = "1.0")
+    public ResponseEntity<List<ShowPublicModuleDto>> getAllAvailableModules(){
+
+        UUID currentTenantId = TenantContext.getCurrentTenant();
+
+        return ResponseEntity.ok().body(
+                tenantModuleUseCase.findAllAvailableModulesToPay(currentTenantId)
+                        .stream().map(
+                                moduleWebMapper::toShowPublicModuleDto
+                        ).toList()
+        );
     }
 }
