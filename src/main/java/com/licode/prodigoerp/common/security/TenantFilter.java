@@ -25,11 +25,6 @@ import java.util.UUID;
 public class TenantFilter extends OncePerRequestFilter {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-    private final JwtUtil jwtUtil;
-    private static final String HEADER = "Authorization";
-    private static final String PREFIX = "Bearer ";
-
-
 
     @Qualifier("publicPaths")
     private final List<String> publicPaths;
@@ -37,31 +32,8 @@ public class TenantFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader(HEADER);
-
-        if(authHeader == null || !authHeader.startsWith(PREFIX)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String tenantId = request.getHeader("X-Tenant-Id");
-
-        if(tenantId == null || tenantId.isEmpty() || tenantId.equalsIgnoreCase("null")) {
-           throw new NotFoundException("No Tenant Id found in the request");
-        }
-
-       // Then we need to find if the connected user exist in the tenant
         try{
-            // TODO: BIG SECURITY ISSUE
-            // TODO: Action: Need to verify if the current user belongs to the Tenant (tenantId provided from the header)
-            // NOTE: when using JwtUtils or SecurityUtils, we have a Forbidden Error
-            // Why? It says we need a complete authentification request
-
-            UUID tenantUuid = UUID.fromString(tenantId); // Temp solution with security issue
-
-            // This is the secure solution but we have an error.
-//            UUID tenantUId = SecurityUtils.getCurrentUser().tenantId();
-//            UUID tenantUUId = jwtUtil.getTenantIdFromToken(authHeader);
+            UUID tenantUuid = SecurityUtils.getCurrentUser().tenantId();
 
             // Set the current TenantId to the Tenant Context
             TenantContext.setCurrentTenant(tenantUuid);
@@ -75,7 +47,6 @@ public class TenantFilter extends OncePerRequestFilter {
         } catch (Exception ex){
             TenantContext.clearCurrentTenant();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
-            return;
         }finally {
             TenantContext.clearCurrentTenant();
         }
