@@ -50,7 +50,7 @@ public class SecurityConfig {
             req.anyRequest().denyAll();
         })
                 .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(formLoginConfigurer -> formLoginConfigurer.disable())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(tenantFilter, JwtAuthFilter.class);
