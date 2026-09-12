@@ -82,6 +82,15 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
     }
 
     @Override
+    public List<Permission> findPermissionsByModuleKey(String moduleKey) {
+        List<PermissionJpaEntity> permissionJpaEntityList = jpaPermissionRepository.findPermissionJpaEntityByModuleJpaEntity_ModuleKey(moduleKey);
+
+        return permissionJpaEntityList.stream().map(
+                PermissionJpaMapper::toDomainModel
+        ).toList();
+    }
+
+    @Override
     @Transactional
     public Role saveRole(Role role) {
         RoleJpaEntity roleJpaEntity = jpaRoleRepository.save(
