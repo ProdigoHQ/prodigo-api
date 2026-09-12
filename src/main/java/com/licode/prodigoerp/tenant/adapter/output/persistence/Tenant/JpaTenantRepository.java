@@ -29,5 +29,4 @@ public interface JpaTenantRepository extends JpaRepository<TenantJpaEntity, UUID
 
     @Query("SELECT m FROM ModuleJpaEntity m LEFT JOIN ModuleSubscriptionJpaEntity ms ON m.id = ms.moduleJpaEntity.id AND ms.tenantJpaEntity.id = :tenantId WHERE ms.id IS NULL AND m.isActive = true")
     List<ModuleJpaEntity> findModuleWhereTenantIdNotEquals(UUID tenantId);
-
 }
