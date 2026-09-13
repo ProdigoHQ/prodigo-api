@@ -33,7 +33,7 @@ public class TenantModuleAdapter implements TenantModuleQueryPort {
     }
 
     @Override
-    public Module findModuleByModuleKeyAndTenantId(String moduleKey, String tenantId) {
+    public Module findModuleByModuleKeyAndTenantId(String moduleKey, UUID tenantId) {
         return ModuleJpaMapper.toDomainModel(jpaModuleRepository.findModuleByModuleKeyAndTenant_Id(moduleKey, tenantId));
     }
 }

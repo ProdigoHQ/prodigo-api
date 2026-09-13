@@ -1,12 +1,14 @@
 package com.licode.prodigoerp.tenant.adapter.input.rest.controller;
 
 import com.licode.prodigoerp.common.config.TenantContext;
+import com.licode.prodigoerp.module.adapter.input.rest.dto.ModuleResponseDto;
 import com.licode.prodigoerp.module.adapter.input.rest.dto.ShowPublicModuleDto;
 import com.licode.prodigoerp.module.adapter.input.rest.mapper.ModuleWebMapper;
 import com.licode.prodigoerp.tenant.application.port.input.TenantModuleUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,4 +48,17 @@ public class TenantModuleController {
                         ).toList()
         );
     }
+
+    // get the module details infos with its permissions
+    @GetMapping(path = "/{moduleKey}", version = "1.0")
+    public ResponseEntity<ModuleResponseDto> getModule(@PathVariable String moduleKey){
+
+        UUID currentTenantId = TenantContext.getCurrentTenant();
+
+        return ResponseEntity.ok().body(
+                moduleWebMapper.toModuleResponseDto(
+                        tenantModuleUseCase.findModuleWithPermissionsByKeyAndTenantId(moduleKey, currentTenantId))
+        );
+    }
+
 }

@@ -8,5 +8,5 @@ import java.util.UUID;
 public interface TenantModuleQueryPort {
     List<Module> findAllActiveModulesByTenantId(UUID tenantId);
     List<Module> findAllAvailableModulesToPay(UUID tenantId);
-    Module findModuleByModuleKeyAndTenantId(String moduleKey, String tenantId);
+    Module findModuleByModuleKeyAndTenantId(String moduleKey, UUID tenantId);
 }
