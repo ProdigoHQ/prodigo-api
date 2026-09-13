@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -33,7 +34,8 @@ public class TenantModuleAdapter implements TenantModuleQueryPort {
     }
 
     @Override
-    public Module findModuleByModuleKeyAndTenantId(String moduleKey, UUID tenantId) {
-        return ModuleJpaMapper.toDomainModel(jpaModuleRepository.findModuleByModuleKeyAndTenant_Id(moduleKey, tenantId));
+    public Optional<Module> findModuleByModuleKeyAndTenantId(String moduleKey, UUID tenantId) {
+        Optional<ModuleJpaEntity> moduleOptional = jpaModuleRepository.findModuleByModuleKeyAndTenant_Id(moduleKey, tenantId);
+        return moduleOptional.map(ModuleJpaMapper::toDomainModel);
     }
 }

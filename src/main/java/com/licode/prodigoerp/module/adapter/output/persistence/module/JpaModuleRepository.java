@@ -23,6 +23,6 @@ public interface JpaModuleRepository extends JpaRepository<ModuleJpaEntity, UUID
     AND m.module_key = 'STOCK'
     * */
     @Query("select m from ModuleSubscriptionJpaEntity ms INNER join ModuleJpaEntity m ON ms.moduleJpaEntity.id = m.id where ms.tenantJpaEntity.id = :tenantId and ms.status = 'ACTIVE' AND m.moduleKey = :moduleKey")
-    ModuleJpaEntity findModuleByModuleKeyAndTenant_Id(String moduleKey, UUID tenantId);
+    Optional<ModuleJpaEntity> findModuleByModuleKeyAndTenant_Id(String moduleKey, UUID tenantId);
 
 }

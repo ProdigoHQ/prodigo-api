@@ -3,6 +3,7 @@ package com.licode.prodigoerp.tenant.application.service;
 import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
+import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
 import com.licode.prodigoerp.tenant.application.port.input.TenantModuleUseCase;
 import com.licode.prodigoerp.module.application.port.input.command.ShowPublicModuleCommand;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -58,7 +60,12 @@ public class TenantModuleService implements TenantModuleUseCase {
     @Override
     public ModuleSummaryCommand findModuleWithPermissionsByKeyAndTenantId(String moduleKey, UUID tenantId) {
 
-        Module fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey.toUpperCase(), tenantId);
+        Optional<Module> fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey.toUpperCase(), tenantId);
+
+        if(fetchedModule.isEmpty()) {
+            throw new NotFoundException("No Module Found with this module key: '" + moduleKey + "' among  your subscription");
+        }
+
         List<Permission> associatedFetchedPermissions = roleQueryPort.findPermissionsByModuleKey(moduleKey.toUpperCase());
 
         List<PermissionSummaryCommand> showPermissions = associatedFetchedPermissions.stream()
@@ -71,13 +78,13 @@ public class TenantModuleService implements TenantModuleUseCase {
                 )).toList();
 
         return new ModuleSummaryCommand(
-                fetchedModule.getId(),
-                fetchedModule.getName(),
-                fetchedModule.getDescription(),
-                fetchedModule.getModuleKey(),
-                fetchedModule.getPrice(),
-                fetchedModule.getCurrency(),
-                fetchedModule.getIsActive(),
+                fetchedModule.get().getId(),
+                fetchedModule.get().getName(),
+                fetchedModule.get().getDescription(),
+                fetchedModule.get().getModuleKey(),
+                fetchedModule.get().getPrice(),
+                fetchedModule.get().getCurrency(),
+                fetchedModule.get().getIsActive(),
                 showPermissions
         );
     }
