@@ -1,6 +1,9 @@
 package com.licode.prodigoerp.tenant.application.service;
 
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
+import com.licode.prodigoerp.auth.domain.model.Permission;
+import com.licode.prodigoerp.common.exception.NotFoundException;
+import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
 import com.licode.prodigoerp.module.application.port.input.command.ShowPublicModuleCommand;
 import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.output.TenantModuleQueryPort;
@@ -14,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,9 +33,14 @@ class TenantModuleServiceTest {
     private TenantModuleService tenantModuleService; // what we want to test
 
     private static final UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final String moduleKey = "CRM";
+    private static final UUID CRM_MODULE_ID = UUID.fromString("55555555-5555-5555-5555-555555555555");
+
     private final List<Module> allModules = new ArrayList<>();
     private final List<Module> tenantModules = new ArrayList<>();
     private final List<Module> remainingModules = new ArrayList<>();
+    private Module crmModule;
+    private final List<Permission> associatedFetchedPermissions = new ArrayList<>();
 //    private static final List<ShowPublicModuleCommand> allShowPublicModuleCommands =  new ArrayList<>();
 
     @BeforeEach
@@ -54,6 +63,16 @@ class TenantModuleServiceTest {
         // remaining modules
         for (int i = 0; i < 10 - 3; i++) {
             remainingModules.add(new Module());
+        }
+
+        crmModule = new Module();
+        crmModule.setId(CRM_MODULE_ID);
+        crmModule.setName("CRM");
+        crmModule.setModuleKey(moduleKey);
+
+        // add permissions
+        for (int i = 0; i < 5 ; i++) {
+            associatedFetchedPermissions.add(new Permission());
         }
     }
 
@@ -95,6 +114,36 @@ class TenantModuleServiceTest {
             assertNotEquals(allModules.size(), actual.size());
         }
 
+    }
+
+    @Nested
+    @DisplayName("Testing the findModuleWithPermissionsByKeyAndTenantId function")
+    class FindModuleWithPermissionsByKeyAndTenantId {
+
+        @Test
+        @DisplayName("Happy path Test: find a module details and its permissions")
+        void findModuleWithPermissionsByKeyAndTenantId() {
+            when(tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey, tenantId)).thenReturn(Optional.of(crmModule));
+            when(roleQueryPort.findPermissionsByModuleKey(moduleKey)).thenReturn(associatedFetchedPermissions);
+
+            ModuleSummaryCommand  actual = tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(moduleKey, tenantId);
+
+            verify(tenantModuleQueryPort).findModuleByModuleKeyAndTenantId(moduleKey, tenantId);
+            assertEquals(crmModule.getName(), actual.name());
+            assertEquals(associatedFetchedPermissions.size(), actual.permissions().size());
+        }
+
+        @Test
+        @DisplayName("Sad path: throw error if module not found")
+        void findModuleWithPermissionsByKeyAndTenantIdNotFound() {
+
+            when(tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey, tenantId)).thenReturn(Optional.empty());
+
+            NotFoundException ex = assertThrows(NotFoundException.class,
+                    () -> tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(moduleKey, tenantId));
+
+            assertEquals("No Module Found with this module key: '" + moduleKey + "' among  your subscription", ex.getMessage());
+        }
     }
 
 }
