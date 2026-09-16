@@ -29,7 +29,9 @@ class TenantModuleServiceTest {
     private TenantModuleService tenantModuleService; // what we want to test
 
     private static final UUID tenantId = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final List<Module> allModules =  new ArrayList<>();
+    private final List<Module> allModules = new ArrayList<>();
+    private final List<Module> tenantModules = new ArrayList<>();
+    private final List<Module> remainingModules = new ArrayList<>();
 //    private static final List<ShowPublicModuleCommand> allShowPublicModuleCommands =  new ArrayList<>();
 
     @BeforeEach
@@ -38,25 +40,61 @@ class TenantModuleServiceTest {
         tenantModuleService = new TenantModuleService(
                 tenantModuleQueryPort, roleQueryPort
         );
+
+        // add 10 modules in the all modules
+        for (int i = 0; i < 10 ; i++) {
+            allModules.add(new Module());
+        }
+
+        // add 3 modules for the tenant
+        for (int i = 0; i < 3; i++) {
+            tenantModules.add(new Module());
+        }
+
+        // remaining modules
+        for (int i = 0; i < 10 - 3; i++) {
+            remainingModules.add(new Module());
+        }
     }
 
     @Nested
-    @DisplayName("Test to find all active modules by TenantId")
+    @DisplayName("Testing findAllActiveModulesByTenantId function")
     class FindAllActiveModulesByTenantId {
 
         @Test
+        @DisplayName("Happy path: Test to find all active modules by TenantId (3 modules)")
         void testFindAllActiveModulesByTenantId() {
 
             // Given
-            when(tenantModuleQueryPort.findAllActiveModulesByTenantId(tenantId)).thenReturn(allModules);
+            when(tenantModuleQueryPort.findAllActiveModulesByTenantId(tenantId)).thenReturn(tenantModules);
 
             // when
             List<ShowPublicModuleCommand> actual = tenantModuleService.findAllActiveModulesByTenantId(tenantId);
 
             // then
             verify(tenantModuleQueryPort).findAllActiveModulesByTenantId(tenantId);
+            assertEquals(tenantModules.size(), actual.size());
+            assertNotEquals(9, actual.size());
         }
     }
 
+    @Nested
+    @DisplayName("Testing the findAllAvailableModulesToPay function")
+    class FindAllActiveModulesNotSubByTenantId {
+
+        @Test
+        @DisplayName("Happy path Test: find all active modules not sub by the tenant (7 modules)")
+        void findAllAvailableModulesToPay() {
+            // Given
+            when(tenantModuleQueryPort.findAllAvailableModulesToPay(tenantId)).thenReturn(remainingModules);
+
+            List<ShowPublicModuleCommand> actual = tenantModuleService.findAllAvailableModulesToPay(tenantId);
+
+            verify(tenantModuleQueryPort).findAllAvailableModulesToPay(tenantId);
+            assertEquals(remainingModules.size(), actual.size());
+            assertNotEquals(allModules.size(), actual.size());
+        }
+
+    }
 
 }
