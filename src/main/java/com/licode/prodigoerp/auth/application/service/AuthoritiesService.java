@@ -52,7 +52,7 @@ public class AuthoritiesService implements SaveAuthoritiesUseCase {
         role.setCreatedBy(roleCommand.author());
         role.setUpdatedBy(roleCommand.author());
 
-        return saveRolePort.saveRole(role);
+        return  saveRolePort.saveRole(role);
     }
 
     @Override
