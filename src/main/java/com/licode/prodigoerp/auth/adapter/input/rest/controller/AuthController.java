@@ -15,11 +15,15 @@ import com.licode.prodigoerp.auth.domain.model.RefreshToken;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.common.config.TenantContext;
+import com.licode.prodigoerp.tenant.application.port.output.TenantQueryPort;
+import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +38,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(path = "/api/{version}/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
 
@@ -65,7 +70,19 @@ public class AuthController {
         Optional<User> user = loadUserPort.findUserByUsername(loginRequestDto.username());
 
         if(user.isEmpty()){
+            log.error("User not found with username {}", loginRequestDto.username());
             throw new NotFoundException("User not found");
+        }
+
+        // TODO: need to check if the user's Tenant is active or else cannot login
+        // Also consider the path for the super admin (which has no tenant)
+        if(user.get().getTenant() != null){
+            String tenantStatus = user.get().getTenant().getStatus();
+
+            if(!tenantStatus.equalsIgnoreCase("ACTIVE")){
+                log.error("Tenant with Id: {} is not ACTIVE", user.get().getTenant().getId());
+                throw new AccessDeniedException("Access denied! your Tenant is not ACTIVE, Please contact your administrator.");
+            }
         }
 
         RefreshToken refreshToken = refreshTokenStorePort.createRefreshToken(user.get());

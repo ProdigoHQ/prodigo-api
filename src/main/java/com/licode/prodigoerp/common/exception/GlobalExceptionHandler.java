@@ -157,7 +157,7 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(
                 HttpStatus.FORBIDDEN,
                 "Forbidden",
-                "You do not have permission to perform this action.",
+                ex.getMessage(),
                 "ACCESS_DENIED",
                 request
         );
