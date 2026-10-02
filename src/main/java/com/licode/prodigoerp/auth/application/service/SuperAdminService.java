@@ -11,12 +11,14 @@ import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SuperAdminService implements RegisterSuperAdminUseCase {
 
@@ -31,11 +33,13 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
 
         // check if the email, username already exist in the db
         if(loadUserPort.findUserByUsername(registerSuperAdminCommand.username()).isPresent()){
-            throw new ConflictException("Username already exists");
+            log.error("Username {} already exists", registerSuperAdminCommand.username());
+            throw new ConflictException("Username already exists, please create another username");
         }
 
         if(loadUserPort.findUserByEmail(registerSuperAdminCommand.email()).isPresent() ) {
-            throw new ConflictException("Email already exists");
+            log.error("Email {} already exists", registerSuperAdminCommand.email());
+            throw new ConflictException("Email already exists,  please try another email");
         };
 
         // TODO: need to get the username of the person connected

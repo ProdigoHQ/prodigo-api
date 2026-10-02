@@ -22,6 +22,7 @@ import com.licode.prodigoerp.tenant.application.port.input.TenantLookUpUseCase;
 import com.licode.prodigoerp.tenant.application.port.input.command.CreateTenantCommand;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserService implements RegisterUserUseCase {
 
@@ -52,16 +54,19 @@ public class UserService implements RegisterUserUseCase {
 
         // check if the email, username already exist in the db
         if(loadUserPort.findUserByUsername(registerUserCommand.username()).isPresent()){
-            throw new ConflictException("Username already exists");
+            log.error("Username: {} already exists",  registerUserCommand.username());
+            throw new ConflictException("Username already exists, Please try another one.");
         }
 
         if(loadUserPort.findUserByEmail(registerUserCommand.email()).isPresent() ) {
-            throw new ConflictException("Email already exists");
+            log.error("Email: {} already exists",  registerUserCommand.email());
+            throw new ConflictException("Email already exists,  Please try another email.");
         };
 
         // also need to check is the Company exist or not in the db
         if(tenantLookUpUseCase.existsBySlug(registerUserCommand.companySlug())){
-            throw new ConflictException("Company Name already exists");
+            log.error("Company name (slug): {} already exists",  registerUserCommand.companySlug());
+            throw new ConflictException("Company Name already exists, Please try another one.");
         }
 
         // creating a tenant while registering the user

@@ -15,6 +15,7 @@ import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.input.TenantLookUpUseCase;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthoritiesService implements SaveAuthoritiesUseCase {
 
@@ -69,6 +71,7 @@ public class AuthoritiesService implements SaveAuthoritiesUseCase {
         Optional<User> user = loadUserPort.findUserById(assignRoleCommand.userId());
 
         if (user.isEmpty()) {
+            log.error("User with id {} not found", assignRoleCommand.userId());
             throw new NotFoundException("User not found with id: " + assignRoleCommand.userId());
         }
 
@@ -82,6 +85,7 @@ public class AuthoritiesService implements SaveAuthoritiesUseCase {
         }
 
         if (role.isEmpty()) {
+            log.error("Role not found with id: {}", assignRoleCommand.roleId());
             throw new NotFoundException("Role not found with id: " + assignRoleCommand.roleId());
         }
 
@@ -94,6 +98,7 @@ public class AuthoritiesService implements SaveAuthoritiesUseCase {
         userRole.setAssignedBy(assignRoleCommand.assignBy());
         userRole.setExpiresAt(now.plusSeconds(315576000)); // TODO (to be refactor) expires in 10 years
 
+        log.info("Role with Id: {} assigned to User with Id: {}", assignRoleCommand.roleId(), assignRoleCommand.userId());
         saveRolePort.saveUserRole(userRole);
     }
 
@@ -126,7 +131,8 @@ public class AuthoritiesService implements SaveAuthoritiesUseCase {
             Optional<Module> fetchedModule = moduleLookUpUseCase.findModuleByModuleKey(permissionCommand.moduleKey());
 
             if (fetchedModule.isEmpty()) {
-                throw  new NotFoundException("Module with key " + permissionCommand.moduleKey() +" not found - Permission create");
+                log.error("Module not found with id: {}", permissionCommand.moduleKey());
+                throw  new NotFoundException("Module with key " + permissionCommand.moduleKey() +" not found");
             }
 
             module = fetchedModule.get();
@@ -143,6 +149,8 @@ public class AuthoritiesService implements SaveAuthoritiesUseCase {
         permission.setUpdatedAt(now);
         permission.setCreatedBy(author);
         permission.setUpdatedBy(author);
+
+        log.info("Permission with code: {} created on: {}", permissionCode, now);
 
         return savePermissionPort.savePermission(permission);
     }
@@ -163,6 +171,7 @@ public class AuthoritiesService implements SaveAuthoritiesUseCase {
         }
 
         if (role.isEmpty()) {
+            log.error("Role not found with id: {}", assignRoleCommand.roleId());
             throw new NotFoundException("Role not found with id: " + assignRoleCommand.roleId());
         }
 

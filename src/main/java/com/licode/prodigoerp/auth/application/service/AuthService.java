@@ -9,6 +9,7 @@ import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthService implements RefreshTokenUseCase {
 
@@ -37,6 +39,7 @@ public class AuthService implements RefreshTokenUseCase {
         Optional<RefreshToken> fetchedRefreshTokenObj = refreshTokenStorePort.findRefreshTokenByTokenString(refreshToken);
 
         if (fetchedRefreshTokenObj.isEmpty()) {
+            log.error("No refresh token found with the string provided");
             throw new NotFoundException("Refresh token not found");
         }
 
@@ -44,10 +47,12 @@ public class AuthService implements RefreshTokenUseCase {
 
         // need to do verification to be sure the Refresh token is a valid Token
         if(refreshTokenObj.getIsRevoked()){
-          throw new AccessDeniedException("Access Denied! Refresh token is revoked");
+            log.error("The refresh token has been revoked");
+            throw new AccessDeniedException("Access Denied! Refresh token has been revoked");
       }
 
       if(refreshTokenObj.getExpiryDate().isBefore(Instant.now())){
+          log.error("The refresh token has expired");
           throw new BadCredentialsException("Bad credentials! Your token has expired");
       }
 
@@ -60,6 +65,7 @@ public class AuthService implements RefreshTokenUseCase {
       RefreshToken newRefreshToken = refreshTokenStorePort.createRefreshToken(user);
       String newAccessToken = tokenGeneratorPort.generateAccessToken(user);
 
+      log.info("New access token generated for the user with id: {}", user.getId());
       return new RefreshResponseCommand(
               newAccessToken,
               newRefreshToken.getToken()
