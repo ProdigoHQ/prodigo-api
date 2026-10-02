@@ -1,7 +1,7 @@
 package com.licode.prodigoerp.tenant.application.service;
 
 import com.licode.prodigoerp.tenant.application.port.input.CreateTenantUseCase;
-import com.licode.prodigoerp.tenant.application.port.output.saveTenantPort;
+import com.licode.prodigoerp.tenant.application.port.output.SaveTenantPort;
 import com.licode.prodigoerp.tenant.application.port.input.command.CreateTenantCommand;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import lombok.RequiredArgsConstructor;
@@ -9,10 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
-@Service
 @RequiredArgsConstructor
 public class TenantService implements CreateTenantUseCase {
-    private final saveTenantPort saveTenantPort;
+    private final SaveTenantPort saveTenantPort;
 
     @Override
     public Tenant create(CreateTenantCommand command) {

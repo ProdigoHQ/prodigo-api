@@ -1,7 +1,7 @@
 package com.licode.prodigoerp.tenant.adapter.output.persistence.Tenant;
 
 
-import com.licode.prodigoerp.tenant.application.port.output.saveTenantPort;
+import com.licode.prodigoerp.tenant.application.port.output.SaveTenantPort;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
-public class TenantPersistenceAdapter implements saveTenantPort {
+public class TenantPersistenceAdapter implements SaveTenantPort {
 
     private final JpaTenantRepository jpaTenantRepository;
 
