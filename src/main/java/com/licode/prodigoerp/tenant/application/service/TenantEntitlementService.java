@@ -7,6 +7,7 @@ import com.licode.prodigoerp.tenant.application.port.output.TenantEntitlementPor
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import com.licode.prodigoerp.tenant.domain.model.TenantEntitlement;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TenantEntitlementService implements TenantEntitlementUseCase {
     private final TenantEntitlementPort tenantEntitlementPort;
@@ -34,6 +36,7 @@ public class TenantEntitlementService implements TenantEntitlementUseCase {
         newEntitlement.setCreatedBy(tenant.getCreatedBy());
         newEntitlement.setUpdatedBy(tenant.getUpdatedBy());
 
+        log.info("Creating default tenant entitlement for tenant: {}",tenant.getName());
         return tenantEntitlementPort.createDefaultTenantEntitlement(newEntitlement);
     }
 
@@ -42,7 +45,8 @@ public class TenantEntitlementService implements TenantEntitlementUseCase {
         Optional<TenantEntitlement> tenantEntitlementOptional = tenantEntitlementPort.findEntitlementById(tenantId);
 
         if(tenantEntitlementOptional.isEmpty()){
-            throw new NotFoundException("Not Tenant Entitlement Found with the Tenant Id: " + tenantId);
+            log.error("No Tenant entitlement found for tenant id: {}",tenantId);
+            throw new NotFoundException("No Tenant Entitlement Found with the Tenant Id: " + tenantId);
         }
 
         return new PublicTenantEntitlementCommand(

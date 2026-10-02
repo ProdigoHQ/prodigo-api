@@ -5,12 +5,14 @@ import com.licode.prodigoerp.tenant.application.port.input.TenantLookUpUseCase;
 import com.licode.prodigoerp.tenant.application.port.output.TenantQueryPort;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TenantLookUpService implements TenantLookUpUseCase {
 
@@ -27,6 +29,7 @@ public class TenantLookUpService implements TenantLookUpUseCase {
         Optional<Tenant> tenant = tenantQueryPort.findTenantById(tenantId);
 
         if(tenant.isEmpty()){
+            log.error("No Tenant found for tenant id: {}",tenantId);
             throw new NotFoundException("Tenant not found with id " + tenantId);
         }
 

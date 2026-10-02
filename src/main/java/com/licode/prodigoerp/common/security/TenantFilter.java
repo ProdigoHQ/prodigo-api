@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 @Component
 @Order(2)
+@Slf4j
 @RequiredArgsConstructor
 public class TenantFilter extends OncePerRequestFilter {
 
@@ -37,18 +39,21 @@ public class TenantFilter extends OncePerRequestFilter {
 
             // Set the current TenantId to the Tenant Context
             TenantContext.setCurrentTenant(tenantUuid);
+            log.info("=== Tenant ID injected in the Tenant context ===" );
 
             filterChain.doFilter(request, response);
 
         }catch (NotFoundException ex){
             TenantContext.clearCurrentTenant();
+            log.error("Tenant Id NOT FOUND");
             response.sendError(HttpServletResponse.SC_NOT_FOUND, ex.getMessage());
-            return;
         } catch (Exception ex){
             TenantContext.clearCurrentTenant();
+            log.error("Failed to inject the Tenant Id: {}", ex.getMessage());
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
         }finally {
             TenantContext.clearCurrentTenant();
+            log.info("=== Tenant ID cleared in the Tenant context ===" );
         }
     }
 

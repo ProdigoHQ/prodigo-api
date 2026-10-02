@@ -16,6 +16,7 @@ import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.input.TenantLookUpUseCase;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreateUseCase {
 
@@ -98,6 +100,7 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
 
         // check if there is already a Module with the moduleKey provided
         if(moduleQueryPort.findModuleByModuleKey(registerModuleCommand.moduleKey().toUpperCase()).isPresent()){
+            log.error("Module already exists with id: {}", registerModuleCommand.moduleKey().toUpperCase());
             throw new ConflictException("Module already exists with this key: " + registerModuleCommand.moduleKey());
         }
 

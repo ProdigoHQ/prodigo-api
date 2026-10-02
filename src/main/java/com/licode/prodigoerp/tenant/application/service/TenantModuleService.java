@@ -10,6 +10,7 @@ import com.licode.prodigoerp.module.application.port.input.command.ShowPublicMod
 import com.licode.prodigoerp.tenant.application.port.output.TenantModuleQueryPort;
 import com.licode.prodigoerp.module.domain.model.Module;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TenantModuleService implements TenantModuleUseCase {
 
@@ -62,6 +64,7 @@ public class TenantModuleService implements TenantModuleUseCase {
         Optional<Module> fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey.toUpperCase(), tenantId);
 
         if(fetchedModule.isEmpty()) {
+            log.error("No module found with module key {} for tenant id: {}",moduleKey,tenantId);
             throw new NotFoundException("No Module Found with this module key: '" + moduleKey + "' among  your subscription");
         }
 

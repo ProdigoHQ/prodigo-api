@@ -73,8 +73,10 @@ public class JwtUtil {
 
             return String.valueOf(claims.get("username"));
         } catch (ExpiredJwtException e) {
+            log.error("Token expired: {}", e.getMessage());
             throw new JwtValidationException("Token expired", e);
         } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid token: {}", e.getMessage());
             throw new JwtValidationException("Invalid token", e);
         }
     }
@@ -88,8 +90,10 @@ public class JwtUtil {
 
             return parseUuid(claims.get("userId",  String.class));
         } catch (ExpiredJwtException e) {
+            log.error("Token expired: {}", e.getMessage());
             throw new JwtValidationException("Token expired", e);
         } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid token: {}", e.getMessage());
             throw new JwtValidationException("Invalid token", e);
         }
     }
