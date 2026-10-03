@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.auth.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.SaveAuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
@@ -50,7 +50,7 @@ class UserServiceTest {
     @Mock private  TenantModuleSubCreateUseCase tenantModuleSubCreateUseCase;
     @Mock private  RefreshTokenStorePort refreshTokenStorePort;
     @Mock private  SaveUserUseCase saveUserUseCase;
-    @Mock private  SaveAuthoritiesUseCase saveAuthoritiesUseCase;
+    @Mock private AuthoritiesUseCase authoritiesUseCase;
     @Mock private  TokenGeneratorPort tokenGeneratorPort;
     @Mock private RoleQueryPort roleQueryPort;
 
@@ -86,7 +86,7 @@ class UserServiceTest {
                 tenantModuleSubCreateUseCase,
                 refreshTokenStorePort,
                 saveUserUseCase,
-                saveAuthoritiesUseCase,
+                authoritiesUseCase,
                 tokenGeneratorPort,
                 roleQueryPort
         );
@@ -175,7 +175,7 @@ class UserServiceTest {
                     .thenReturn(subscriptions);
             when(saveUserUseCase.save(any(CreateUserCommand.class), eq(ACTOR)))
                     .thenReturn(user);
-            when(saveAuthoritiesUseCase.saveRole(any(CreateRoleCommand.class)))
+            when(authoritiesUseCase.saveRole(any(CreateRoleCommand.class)))
                     .thenReturn(adminRole);
 
             when(roleQueryPort.findPermissionByCode(anyString()))
@@ -194,10 +194,10 @@ class UserServiceTest {
             verify(createTenantUseCase).create(any(CreateTenantCommand.class));
             verify(tenantEntitlementUseCase).createDefaultTenantEntitlement(tenant);
             verify(saveUserUseCase).save(any(CreateUserCommand.class), eq(ACTOR));
-            verify(saveAuthoritiesUseCase).saveRole(any(CreateRoleCommand.class));
-            verify(saveAuthoritiesUseCase).assignedRoleToUser(any(AssignRoleCommand.class));
+            verify(authoritiesUseCase).saveRole(any(CreateRoleCommand.class));
+            verify(authoritiesUseCase).assignedRoleToUser(any(AssignRoleCommand.class));
 
-            verify(saveAuthoritiesUseCase, times(subscriptions.size()))
+            verify(authoritiesUseCase, times(subscriptions.size()))
                     .assignedPermissionToRole(any(), any(AssignRoleCommand.class));
 
             verify(roleQueryPort, times(subscriptions.size())).findPermissionByCode(any(String.class));
@@ -277,7 +277,7 @@ class UserServiceTest {
                     .thenReturn(subscriptions);
             when(saveUserUseCase.save(any(CreateUserCommand.class), eq(ACTOR)))
                     .thenReturn(user);
-            when(saveAuthoritiesUseCase.saveRole(any(CreateRoleCommand.class)))
+            when(authoritiesUseCase.saveRole(any(CreateRoleCommand.class)))
                     .thenReturn(adminRole);
 
             when(roleQueryPort.findPermissionByCode("CRM.MODULE.CRUD"))

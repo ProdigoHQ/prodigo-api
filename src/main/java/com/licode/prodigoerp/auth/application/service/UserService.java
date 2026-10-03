@@ -1,7 +1,7 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.RegisterUserUseCase;
-import com.licode.prodigoerp.auth.application.port.input.SaveAuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
@@ -42,7 +42,7 @@ public class UserService implements RegisterUserUseCase {
     private final TenantModuleSubCreateUseCase tenantModuleSubCreateUseCase;
     private final RefreshTokenStorePort refreshTokenStorePort;
     private final SaveUserUseCase saveUserUseCase;
-    private final SaveAuthoritiesUseCase saveAuthoritiesUseCase;
+    private final AuthoritiesUseCase authoritiesUseCase;
     private final TokenGeneratorPort  tokenGeneratorPort;
     private final RoleQueryPort roleQueryPort;
 
@@ -110,7 +110,7 @@ public class UserService implements RegisterUserUseCase {
 
         // here is the Admin role ( for the company (tenant) creating the account)
         // there will be duplicate ADMIN roles here but diff Tenant
-        Role adminRole = saveAuthoritiesUseCase.saveRole(
+        Role adminRole = authoritiesUseCase.saveRole(
                 new CreateRoleCommand(
                         "ADMIN",
                         createdTenant,
@@ -121,7 +121,7 @@ public class UserService implements RegisterUserUseCase {
         );
 
         // Then we need to associate the admin role to the user
-        saveAuthoritiesUseCase.assignedRoleToUser(
+        authoritiesUseCase.assignedRoleToUser(
                 new AssignRoleCommand(
                         fetchedUser.getId(),
                         adminRole.getId(),
@@ -146,7 +146,7 @@ public class UserService implements RegisterUserUseCase {
             }
 
 
-            saveAuthoritiesUseCase.assignedPermissionToRole(
+            authoritiesUseCase.assignedPermissionToRole(
                     permission.get().getId(),
                     new AssignRoleCommand(
                            fetchedUser.getId(),

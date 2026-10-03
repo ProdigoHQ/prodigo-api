@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.module.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.SaveAuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.module.application.port.input.ModuleCreateUseCase;
@@ -32,7 +32,7 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
     private final ModuleLookUpUseCase moduleLookUpUseCase;
     private final TenantLookUpUseCase tenantLookUpUseCase;
     private final ModuleSubscriptionUseCase moduleSubscriptionUseCase;
-    private final SaveAuthoritiesUseCase saveAuthoritiesUseCase;
+    private final AuthoritiesUseCase authoritiesUseCase;
     private final ModuleQueryPort moduleQueryPort;
     private final SaveModulePort saveModulePort;
 
@@ -127,7 +127,7 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
         // We need to generate all permissions for the module created
         registerModuleCommand.createPermissions()
                 .forEach(createdPermission -> {
-                    saveAuthoritiesUseCase.savePermission(createdPermission, actor);
+                    authoritiesUseCase.savePermission(createdPermission, actor);
                 });
 
         return createdModule;

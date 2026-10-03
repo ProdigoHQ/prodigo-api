@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.auth.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.SaveAuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.AssignRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.CreateRoleCommand;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AuthoritiesService implements SaveAuthoritiesUseCase {
+public class AuthoritiesService implements AuthoritiesUseCase {
 
     private final SaveRolePort saveRolePort;
     private final SavePermissionPort savePermissionPort;
