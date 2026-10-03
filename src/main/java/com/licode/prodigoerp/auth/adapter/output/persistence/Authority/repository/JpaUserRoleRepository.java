@@ -26,4 +26,6 @@ public interface JpaUserRoleRepository extends JpaRepository<UserRoleJpaEntity, 
         AND (ur.expiresAt IS NULL OR ur.expiresAt > CURRENT_TIMESTAMP)
         """)
     List<String> findActivePermissionCodesByUserId(@Param("userId") UUID userId);
+
+    boolean existsByRoleJpaEntity_Id(UUID roleId);
 }
