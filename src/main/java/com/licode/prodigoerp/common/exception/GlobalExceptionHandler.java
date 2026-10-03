@@ -148,7 +148,7 @@ public class GlobalExceptionHandler {
     /*
      * 403 - Forbidden
      */
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({AccessDeniedException.class, ForbiddenException.class})
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request
