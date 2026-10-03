@@ -12,7 +12,7 @@ public interface PermissionPersistencePort {
 
     Optional<Permission> findById(UUID id);
     Optional<Permission> findByCode(String code);
-    Optional<Permission> findPermissionByModuleKey(String moduleKey);
+    List<Permission> findPermissionsByModuleKey(String moduleKey);
     Optional<Permission> findByCodeAndResource(String code, String resource);
 
     List<String> findActivePermissionCodes(UUID userId);

@@ -62,29 +62,6 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
     }
 
     @Override
-    public Optional<Permission> findPermissionByCode(String code) {
-        Optional<PermissionJpaEntity> permissionJpaEntity = jpaPermissionRepository.findPermissionJpaEntityByCode(code);
-
-        return permissionJpaEntity.map(PermissionJpaMapper::toDomainModel);
-    }
-
-    @Override
-    public List<Permission> findPermissionsByModuleKey(String moduleKey) {
-        List<PermissionJpaEntity> permissionJpaEntityList = jpaPermissionRepository.findPermissionJpaEntityByModuleJpaEntity_ModuleKey(moduleKey);
-
-        return permissionJpaEntityList.stream().map(
-                PermissionJpaMapper::toDomainModel
-        ).toList();
-    }
-
-    @Override
-    public Optional<Permission> findPermissionsByCodeAndResource(String code, String resource) {
-        Optional<PermissionJpaEntity> permissionJpaEntity = jpaPermissionRepository.findPermissionJpaEntityByCodeAndResource(code, resource);
-
-        return permissionJpaEntity.map(PermissionJpaMapper::toDomainModel);
-    }
-
-    @Override
     @Transactional
     public Role saveRole(Role role) {
         RoleJpaEntity roleJpaEntity = jpaRoleRepository.save(

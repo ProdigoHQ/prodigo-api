@@ -137,7 +137,7 @@ public class UserService implements RegisterUserUseCase {
             // we need assign the full access permission of all the modules to the role
             // NOTE: we only get the full access permission code (key.MODULE.CRUD) nothing else
             String permissionString = key + "." + "MODULE" + "." + "CRUD";
-            Optional<Permission> permission = roleQueryPort.findPermissionByCode(permissionString);
+            Optional<Permission> permission = permissionPersistencePort.findByCode(permissionString);
 
             if(permission.isEmpty()) {
                 throw new NotFoundException("Permission with code " + permissionString + " not found");

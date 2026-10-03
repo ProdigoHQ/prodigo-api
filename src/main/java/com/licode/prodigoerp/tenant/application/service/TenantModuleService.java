@@ -1,6 +1,7 @@
 package com.licode.prodigoerp.tenant.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
@@ -23,7 +24,7 @@ import java.util.UUID;
 public class TenantModuleService implements TenantModuleUseCase {
 
     private final TenantModuleQueryPort tenantModuleQueryPort;
-    private final RoleQueryPort roleQueryPort;
+    private final PermissionPersistencePort permissionPersistencePort;
 
     @Override
     public List<ShowPublicModuleCommand> findAllActiveModulesByTenantId(UUID tenantId) {
@@ -68,7 +69,7 @@ public class TenantModuleService implements TenantModuleUseCase {
             throw new NotFoundException("No Module Found with this module key: '" + moduleKey + "' among  your subscription");
         }
 
-        List<Permission> associatedFetchedPermissions = roleQueryPort.findPermissionsByModuleKey(moduleKey.toUpperCase());
+        List<Permission> associatedFetchedPermissions = permissionPersistencePort.findPermissionsByModuleKey(moduleKey.toUpperCase());
 
         List<PermissionSummaryCommand> showPermissions = associatedFetchedPermissions.stream()
                 .map(permission -> new PermissionSummaryCommand(

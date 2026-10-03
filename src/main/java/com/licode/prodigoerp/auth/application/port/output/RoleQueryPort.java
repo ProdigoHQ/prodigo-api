@@ -16,8 +16,4 @@ public interface RoleQueryPort {
     Optional<Role> findRoleByIdAndTenantId(UUID roleId, UUID tenantId);
     Optional<Role> findRoleByNameWithTenantNull(String roleName);
     Optional<Role> findRoleByIdWithTenantNull(UUID roleId);
-
-    // Permission Queries
-    Optional<Permission> findPermissionByCode(String code);
-    List<Permission> findPermissionsByModuleKey(String moduleKey);
 }

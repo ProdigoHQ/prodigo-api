@@ -5,6 +5,7 @@ import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
+import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.Role;
@@ -24,6 +25,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
 
     private final LoadUserPort loadUserPort;
     private final SaveUserUseCase saveUserUseCase;
+    private final PermissionPersistencePort permissionPersistencePort;
     private final RoleQueryPort roleQueryPort;
     private final AuthoritiesUseCase authoritiesUseCase;
 
@@ -88,7 +90,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
         );
 
         // Then we fetched/create the default permission
-        Optional<Permission> fetchedPermission = roleQueryPort.findPermissionByCode(defaultPermissionCode);
+        Optional<Permission> fetchedPermission = permissionPersistencePort.findByCode(defaultPermissionCode);
 
         Permission defaultPermission = fetchedPermission.orElseGet(() -> authoritiesUseCase.savePermission(
                 new CreatePermissionCommand(

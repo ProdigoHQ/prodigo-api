@@ -37,12 +37,18 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     @Override
     public Optional<Permission> findByCode(String code) {
-        return Optional.empty();
+        Optional<PermissionJpaEntity> permissionJpaEntity = jpaPermissionRepository.findPermissionJpaEntityByCode(code);
+
+        return permissionJpaEntity.map(PermissionJpaMapper::toDomainModel);
     }
 
     @Override
-    public Optional<Permission> findPermissionByModuleKey(String moduleKey) {
-        return Optional.empty();
+    public List<Permission> findPermissionsByModuleKey(String moduleKey) {
+        List<PermissionJpaEntity> permissionJpaEntityList = jpaPermissionRepository.findPermissionJpaEntityByModuleJpaEntity_ModuleKey(moduleKey);
+
+        return permissionJpaEntityList.stream().map(
+                PermissionJpaMapper::toDomainModel
+        ).toList();
     }
 
     @Override
