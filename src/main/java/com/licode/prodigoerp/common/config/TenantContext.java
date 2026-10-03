@@ -4,19 +4,19 @@ import java.util.UUID;
 
 public class TenantContext {
 
-    public static ThreadLocal<UUID> currentTenant =  new ThreadLocal<>();
+    private static final ThreadLocal<UUID> CURRENT_TENANT =  new ThreadLocal<>();
 
     public static void setCurrentTenant(UUID tenantId) {
         if(tenantId != null) {
-            currentTenant.set(tenantId);
+            CURRENT_TENANT.set(tenantId);
         }
     }
 
     public static UUID getCurrentTenant() {
-        return currentTenant.get();
+        return CURRENT_TENANT.get();
     }
 
     public static void clearCurrentTenant() {
-        currentTenant.remove();
+        CURRENT_TENANT.remove();
     }
 }
