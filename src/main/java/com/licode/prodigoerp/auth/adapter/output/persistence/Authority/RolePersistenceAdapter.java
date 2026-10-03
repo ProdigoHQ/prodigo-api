@@ -20,7 +20,9 @@ import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.RolePermission;
 import com.licode.prodigoerp.auth.domain.model.UserRole;
+import com.licode.prodigoerp.common.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,66 +108,82 @@ public class RolePersistenceAdapter implements RolePersistencePort, RoleQueryPor
 
     @Override
     public Role save(Role role) {
-        return null;
+        RoleJpaEntity roleJpaEntity = jpaRoleRepository.save(RoleJpaMapper.toJpaEntity(role));
+        return RoleJpaMapper.toDomainModel(roleJpaEntity);
     }
 
     @Override
     public Optional<Role> findSystemRole(UUID roleId) {
-        return Optional.empty();
+        return jpaRoleRepository.findRoleJpaEntityByIdAndTenantJpaEntity_IdNull(roleId)
+                .map(RoleJpaMapper::toDomainModel);
     }
 
     @Override
     public Optional<Role> findTenantRole(UUID roleId, UUID tenantId) {
-        return Optional.empty();
+        return jpaRoleRepository.findRoleJpaEntityByIdAndTenantJpaEntity_Id(roleId, tenantId)
+                .map(RoleJpaMapper::toDomainModel);
     }
 
     @Override
     public List<Role> findSystemRoles() {
-        return List.of();
+        return jpaRoleRepository.findAllByTenantJpaEntityNullOrderByNameAsc()
+                .stream().map(RoleJpaMapper::toDomainModel)
+                .toList();
     }
 
     @Override
     public List<Role> findByTenantId(UUID tenantId) {
-        return List.of();
+        return jpaRoleRepository.findAllByTenantJpaEntity_IdOrderByNameAsc(tenantId)
+                .stream().map(RoleJpaMapper::toDomainModel)
+                .toList();
     }
 
     @Override
     public List<Permission> findPermissionsByRoleId(UUID roleId) {
-        return List.of();
+        return jpaRolePermissionRepository.findRolePermissionJpaEntitiesByRoleJpaEntity_Id(roleId)
+                .stream().map(PermissionJpaMapper::toDomainModel)
+                .toList();
     }
 
     @Override
     public boolean systemRoleNameExists(String name) {
-        return false;
+        return jpaRoleRepository.existsByNameIgnoreCaseAndTenantJpaEntityNull(name);
     }
 
     @Override
     public boolean tenantRoleNameExists(String name, UUID tenantId) {
-        return false;
+        return jpaRoleRepository.existsByNameIgnoreCaseAndTenantJpaEntity_Id(name,tenantId);
     }
 
     @Override
     public boolean isAssignedToUsers(UUID roleId) {
-        return false;
+        return jpaUserRoleRepository.existsByRoleJpaEntity_Id(roleId);
     }
 
     @Override
     public boolean rolePermissionExists(UUID roleId, UUID permissionId) {
-        return false;
+        return jpaRolePermissionRepository.existsByRoleJpaEntity_IdAndPermissionJpaEntity_Id(roleId, permissionId);
     }
 
     @Override
     public void delete(Role role) {
+        // remove the join rows first so the FK doesn't block the delete
+        jpaRolePermissionRepository.deleteAllByRoleId(role.getId());
 
+        jpaRoleRepository.delete(RoleJpaMapper.toJpaEntity(role));
     }
 
     @Override
     public void saveRolePermission(RolePermission rolePermission) {
-
+        try{
+            jpaRolePermissionRepository.save(RolePermissionJpaMapper.toJpaEntity(rolePermission));
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Permission is already assigned to this role");
+        }
     }
 
     @Override
     public void deleteRolePermission(UUID roleId, UUID permissionId) {
-
+        jpaRolePermissionRepository.deleteByRoleIdAndPermissionId(roleId, permissionId);
     }
 }

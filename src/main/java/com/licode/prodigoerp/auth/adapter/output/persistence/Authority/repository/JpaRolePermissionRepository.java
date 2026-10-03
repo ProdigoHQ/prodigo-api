@@ -17,6 +17,7 @@ public interface JpaRolePermissionRepository extends JpaRepository<RolePermissio
     List<PermissionJpaEntity> findRolePermissionJpaEntitiesByRoleJpaEntity_Id(UUID roleJpaEntityId);
 
     boolean existsByPermissionJpaEntity_Id(UUID permissionJpaEntityId);
+    boolean existsByRoleJpaEntity_IdAndPermissionJpaEntity_Id(UUID roleJpaEntityId, UUID permissionJpaEntityId);
 
     @Modifying
     @Query("DELETE FROM RolePermissionJpaEntity  rp WHERE rp.roleJpaEntity.id = :roleId and rp.permissionJpaEntity.id = :permissionId")
