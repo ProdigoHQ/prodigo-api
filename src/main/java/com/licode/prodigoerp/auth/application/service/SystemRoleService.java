@@ -107,7 +107,7 @@ public class SystemRoleService implements SystemRoleUseCase {
 
         return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(roleId));
     }
-    
+
     // On creating set all fields else just set the updated fields
     private void stamp(Role role, boolean creating) {
         Instant now = Instant.now();
