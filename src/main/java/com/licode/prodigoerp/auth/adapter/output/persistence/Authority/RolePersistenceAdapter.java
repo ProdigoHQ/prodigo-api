@@ -12,6 +12,7 @@ import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repositor
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaRolePermissionRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaRoleRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaUserRoleRepository;
+import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.application.port.output.SavePermissionPort;
 import com.licode.prodigoerp.auth.application.port.output.SaveRolePort;
@@ -29,17 +30,11 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, SavePermissionPort {
+public class RolePersistenceAdapter implements RolePersistencePort, RoleQueryPort, SaveRolePort, SavePermissionPort {
     final private JpaRoleRepository jpaRoleRepository;
     final private JpaUserRoleRepository jpaUserRoleRepository;
     final private JpaPermissionRepository jpaPermissionRepository;
     final private JpaRolePermissionRepository jpaRolePermissionRepository;
-
-    @Override
-    public List<String> findActiveRoleNames(UUID userId) {
-
-        return jpaUserRoleRepository.findActiveRoleNamesByUserId(userId);
-    }
 
     @Override
     public Optional<Role> findRoleByIdAndTenantId(UUID roleId, UUID tenantId) {
@@ -98,5 +93,79 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
         );
 
         RolePermissionJpaMapper.toDomainModel(rolePermissionJpaEntity);
+    }
+    /// TODO: Refactor the above
+    ///
+
+    @Override
+    public List<String> findActiveRoleNames(UUID userId) {
+
+        return jpaUserRoleRepository.findActiveRoleNamesByUserId(userId);
+    }
+
+
+    @Override
+    public Role save(Role role) {
+        return null;
+    }
+
+    @Override
+    public Optional<Role> findSystemRole(UUID roleId) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Role> findTenantRole(UUID roleId, UUID tenantId) {
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Role> findSystemRoles() {
+        return List.of();
+    }
+
+    @Override
+    public List<Role> findByTenantId(UUID tenantId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Permission> findPermissionsByRoleId(UUID roleId) {
+        return List.of();
+    }
+
+    @Override
+    public boolean systemRoleNameExists(String name) {
+        return false;
+    }
+
+    @Override
+    public boolean tenantRoleNameExists(String name, UUID tenantId) {
+        return false;
+    }
+
+    @Override
+    public boolean isAssignedToUsers(UUID roleId) {
+        return false;
+    }
+
+    @Override
+    public boolean rolePermissionExists(UUID roleId, UUID permissionId) {
+        return false;
+    }
+
+    @Override
+    public void delete(Role role) {
+
+    }
+
+    @Override
+    public void saveRolePermission(RolePermission rolePermission) {
+
+    }
+
+    @Override
+    public void deleteRolePermission(UUID roleId, UUID permissionId) {
+
     }
 }
