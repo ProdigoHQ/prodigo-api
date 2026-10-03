@@ -17,7 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/{version}/s/admin/permissions")
 @RequiredArgsConstructor
-public class PermissionController {
+public class PlatformPermissionController {
 
     private final AuthoritiesWebMapper authoritiesWebMapper;
     private final AuthoritiesUseCase authoritiesUseCase;

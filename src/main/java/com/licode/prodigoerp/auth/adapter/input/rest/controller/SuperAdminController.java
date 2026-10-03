@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasRole('SUPER_ADMIN')")
 @RequestMapping("/api/{version}/s/admin")
 @RequiredArgsConstructor
-public class AdminController {
+public class SuperAdminController {
 
     private final RegisterSuperAdminUseCase registerSuperAdminUseCase;
     private final AuthWebMapper authWebMapper;
