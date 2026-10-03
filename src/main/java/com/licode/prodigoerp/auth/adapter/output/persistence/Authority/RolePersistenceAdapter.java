@@ -62,14 +62,6 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
     }
 
     @Override
-    public Optional<Permission> findPermissionById(UUID permissionId) {
-       Optional<PermissionJpaEntity> permissionJpaEntity = jpaPermissionRepository
-               .findPermissionJpaEntityById(permissionId);
-
-       return permissionJpaEntity.map(PermissionJpaMapper::toDomainModel);
-    }
-
-    @Override
     public Optional<Permission> findPermissionByCode(String code) {
         Optional<PermissionJpaEntity> permissionJpaEntity = jpaPermissionRepository.findPermissionJpaEntityByCode(code);
 
@@ -90,18 +82,6 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
         Optional<PermissionJpaEntity> permissionJpaEntity = jpaPermissionRepository.findPermissionJpaEntityByCodeAndResource(code, resource);
 
         return permissionJpaEntity.map(PermissionJpaMapper::toDomainModel);
-    }
-
-    @Override
-    public List<Permission> findPermissionsByRoleId(UUID roleId) {
-        List<PermissionJpaEntity> permissionJpaEntityList = jpaRolePermissionRepository.findRolePermissionJpaEntitiesByRoleJpaEntity_Id(roleId);
-
-        return permissionJpaEntityList.stream().map(PermissionJpaMapper::toDomainModel).toList();
-    }
-
-    @Override
-    public void deletePermissionById(UUID permissionId) {
-        jpaPermissionRepository.deleteById(permissionId);
     }
 
     @Override

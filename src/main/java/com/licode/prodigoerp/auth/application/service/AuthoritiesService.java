@@ -2,10 +2,7 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
-import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
-import com.licode.prodigoerp.auth.application.port.output.SavePermissionPort;
-import com.licode.prodigoerp.auth.application.port.output.SaveRolePort;
+import com.licode.prodigoerp.auth.application.port.output.*;
 import com.licode.prodigoerp.auth.domain.model.*;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.common.exception.NotFoundException;
@@ -36,6 +33,7 @@ public class AuthoritiesService implements AuthoritiesUseCase {
     private final TenantLookUpUseCase tenantLookUpUseCase;
     private final LoadUserPort loadUserPort;
     private final RoleQueryPort roleQueryPort;
+    private final PermissionPersistencePort permissionPersistencePort;
 
     @Override
     @Transactional
@@ -142,7 +140,7 @@ public class AuthoritiesService implements AuthoritiesUseCase {
 
         // check if there is no permission duplicate in the db
         // NOTE: permissionCode + resource should not be duplicate
-        Optional<Permission> permissionExist = roleQueryPort.findPermissionsByCodeAndResource(permissionCode.toUpperCase(), permissionCommand.resource().toUpperCase());
+        Optional<Permission> permissionExist = permissionPersistencePort.findByCodeAndResource(permissionCode.toUpperCase(), permissionCommand.resource().toUpperCase());
         if (permissionExist.isPresent()) {
             log.error("Permission with code {} for the resource {} already exists", permissionCode.toUpperCase(),  permissionCommand.resource().toUpperCase());
             throw new ConflictException("Permission with code " + permissionCode.toUpperCase() + " already exists. Please choose another one");
@@ -185,7 +183,7 @@ public class AuthoritiesService implements AuthoritiesUseCase {
             throw new NotFoundException("Role not found with id: " + assignRoleCommand.roleId());
         }
 
-        Optional<Permission> permission = roleQueryPort.findPermissionById(permissionId);
+        Optional<Permission> permission = permissionPersistencePort.findById(permissionId);
 
         if (permission.isEmpty()) {
             throw new NotFoundException("Permission not found with id: " + permissionId);
@@ -202,7 +200,7 @@ public class AuthoritiesService implements AuthoritiesUseCase {
     @Override
     public PermissionSummaryCommand fetchPermissionSummary(UUID permissionId) {
 
-        Optional<Permission> permission = roleQueryPort.findPermissionById(permissionId);
+        Optional<Permission> permission = permissionPersistencePort.findById(permissionId);
 
         if(permission.isEmpty()) {
             log.error("Permission not found with id: {}", permissionId);
@@ -236,7 +234,7 @@ public class AuthoritiesService implements AuthoritiesUseCase {
         }
 
         // fetched all the permissions related to the role found
-        List<Permission> permissions = roleQueryPort.findPermissionsByRoleId(role.get().getId());
+        List<Permission> permissions = permissionPersistencePort.findPermissionsByRoleId(role.get().getId());
 
         List<PermissionSummaryCommand> permissionSummaries = permissions.stream().map(permission -> new PermissionSummaryCommand(
                 permission.getId(),
@@ -254,13 +252,5 @@ public class AuthoritiesService implements AuthoritiesUseCase {
                 permissionSummaries
         );
     }
-
-    @Override
-    public void deletePermission(UUID permissionId) {
-        roleQueryPort.deletePermissionById(permissionId);
-        String currentUserLogin = SecurityUtils.getCurrentUser().username();
-        log.info("Permission with id: {} has been deleted by {}", permissionId, currentUserLogin);
-    }
-
 
 }

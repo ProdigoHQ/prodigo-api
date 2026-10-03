@@ -3,6 +3,7 @@ package com.licode.prodigoerp.auth.adapter.output.persistence.Authority;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.entity.PermissionJpaEntity;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.PermissionJpaMapper;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaPermissionRepository;
+import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaRolePermissionRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaUserRoleRepository;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
@@ -19,6 +20,7 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     final private JpaPermissionRepository jpaPermissionRepository;
     final private JpaUserRoleRepository jpaUserRoleRepository;
+    final private JpaRolePermissionRepository jpaRolePermissionRepository;
 
     @Override
     public Permission save(Permission permission) {
@@ -45,7 +47,9 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     @Override
     public Optional<Permission> findByCodeAndResource(String code, String resource) {
-        return Optional.empty();
+        Optional<PermissionJpaEntity> permissionJpaEntity = jpaPermissionRepository.findPermissionJpaEntityByCodeAndResource(code, resource);
+
+        return permissionJpaEntity.map(PermissionJpaMapper::toDomainModel);
     }
 
     @Override
@@ -71,7 +75,12 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     @Override
     public List<Permission> findPermissionsByRoleId(UUID roleID) {
-        return List.of();
+
+        List<PermissionJpaEntity> permissionJpaEntityList = jpaRolePermissionRepository.findRolePermissionJpaEntitiesByRoleJpaEntity_Id(roleID);
+
+        return permissionJpaEntityList.stream().map(
+                PermissionJpaMapper::toDomainModel
+        ).toList();
     }
 
     @Override
