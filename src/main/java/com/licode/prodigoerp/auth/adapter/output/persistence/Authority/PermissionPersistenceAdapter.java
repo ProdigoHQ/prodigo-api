@@ -24,7 +24,9 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     @Override
     public Permission save(Permission permission) {
-        return null;
+
+        PermissionJpaEntity jpaEntity = jpaPermissionRepository.save(PermissionJpaMapper.toJpaEntity(permission));
+        return PermissionJpaMapper.toDomainModel(jpaEntity);
     }
 
     @Override
@@ -71,12 +73,16 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     @Override
     public List<Permission> findAll() {
-        return List.of();
+        return jpaPermissionRepository.findAll().stream()
+                .map(PermissionJpaMapper::toDomainModel)
+                .toList();
     }
 
     @Override
     public List<Permission> findAllTenantAssignable() {
-        return List.of();
+        return jpaPermissionRepository.findAllByTenantAssignableTrueOrderByCodeAsc().stream()
+                .map(PermissionJpaMapper::toDomainModel)
+                .toList();
     }
 
     @Override
@@ -91,7 +97,7 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     @Override
     public boolean isAssignedToAnyRole(UUID permissionId) {
-        return false;
+        return jpaRolePermissionRepository.existsByPermissionJpaEntity_Id(permissionId);
     }
 
     @Override

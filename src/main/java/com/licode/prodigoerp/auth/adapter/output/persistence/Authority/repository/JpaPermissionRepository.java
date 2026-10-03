@@ -14,4 +14,6 @@ public interface JpaPermissionRepository extends JpaRepository<PermissionJpaEnti
     Boolean existsPermissionJpaEntitiesByCodeContainsIgnoreCase(String code);
     List<PermissionJpaEntity> findPermissionJpaEntityByModuleJpaEntity_ModuleKey(String moduleKey);
     Optional<PermissionJpaEntity> findPermissionJpaEntityByCodeAndResource(String code, String resource);
+
+    List<PermissionJpaEntity> findAllByTenantAssignableTrueOrderByCodeAsc();
 }
