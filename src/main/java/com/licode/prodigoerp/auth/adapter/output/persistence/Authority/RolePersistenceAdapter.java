@@ -4,7 +4,6 @@ import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.entity.Ro
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.PermissionJpaMapper;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.RoleJpaMapper;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.RolePermissionJpaMapper;
-import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaPermissionRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaRolePermissionRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaRoleRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaUserRoleRepository;
@@ -28,7 +27,6 @@ import java.util.UUID;
 public class RolePersistenceAdapter implements RolePersistencePort {
     final private JpaRoleRepository jpaRoleRepository;
     final private JpaUserRoleRepository jpaUserRoleRepository;
-    final private JpaPermissionRepository jpaPermissionRepository;
     final private JpaRolePermissionRepository jpaRolePermissionRepository;
 
     @Override
