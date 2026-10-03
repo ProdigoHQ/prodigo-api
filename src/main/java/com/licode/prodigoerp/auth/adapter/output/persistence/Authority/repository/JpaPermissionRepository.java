@@ -12,4 +12,5 @@ public interface JpaPermissionRepository extends JpaRepository<PermissionJpaEnti
     Optional<PermissionJpaEntity> findPermissionJpaEntityById(UUID permissionId);
     Optional<PermissionJpaEntity> findPermissionJpaEntityByCode(String code);
     List<PermissionJpaEntity> findPermissionJpaEntityByModuleJpaEntity_ModuleKey(String moduleKey);
+    Optional<PermissionJpaEntity> findPermissionJpaEntityByCodeAndResource(String code, String resource);
 }

@@ -1,7 +1,7 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.RegisterSuperAdminUseCase;
-import com.licode.prodigoerp.auth.application.port.input.SaveAuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
@@ -25,7 +25,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
     private final LoadUserPort loadUserPort;
     private final SaveUserUseCase saveUserUseCase;
     private final RoleQueryPort roleQueryPort;
-    private final SaveAuthoritiesUseCase saveAuthoritiesUseCase;
+    private final AuthoritiesUseCase authoritiesUseCase;
 
     @Override
     @Transactional
@@ -67,7 +67,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
 
         // get the role if already exist
         // orElse create  the default role
-        Role defaultRole = fetchedRole.orElseGet(() -> saveAuthoritiesUseCase.saveRole(
+        Role defaultRole = fetchedRole.orElseGet(() -> authoritiesUseCase.saveRole(
                 new CreateRoleCommand(
                         defaultRoleName,
                         null,
@@ -78,7 +78,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
         ));
 
         // Assign the role to the user
-        saveAuthoritiesUseCase.assignedRoleToUser(
+        authoritiesUseCase.assignedRoleToUser(
                 new AssignRoleCommand(
                         fetchedUser.getId(),
                         defaultRole.getId(),
@@ -90,7 +90,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
         // Then we fetched/create the default permission
         Optional<Permission> fetchedPermission = roleQueryPort.findPermissionByCode(defaultPermissionCode);
 
-        Permission defaultPermission = fetchedPermission.orElseGet(() -> saveAuthoritiesUseCase.savePermission(
+        Permission defaultPermission = fetchedPermission.orElseGet(() -> authoritiesUseCase.savePermission(
                 new CreatePermissionCommand(
                         "READ-Only Dashboard: The Default permission that determine if a user Super Admin",
                         null,
@@ -101,7 +101,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
         ));
 
         // Assign the permission to the user
-        saveAuthoritiesUseCase.assignedPermissionToRole(
+        authoritiesUseCase.assignedPermissionToRole(
                 defaultPermission.getId(),
                 new AssignRoleCommand(
                         fetchedUser.getId(),

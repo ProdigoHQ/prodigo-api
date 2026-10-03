@@ -143,7 +143,8 @@ CREATE TABLE IF NOT EXISTS "permissions" (
     "created_at" TIMESTAMP NOT NULL default current_timestamp,
     "updated_at" TIMESTAMP NOT NULL,
     "created_by" VARCHAR(100) NOT NULL,
-    "updated_by" VARCHAR(100) NOT NULL
+    "updated_by" VARCHAR(100) NOT NULL,
+    UNIQUE("code","resource")
 );
 
 ALTER TABLE "permissions"

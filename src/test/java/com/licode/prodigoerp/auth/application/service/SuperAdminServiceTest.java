@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.auth.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.SaveAuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
@@ -30,7 +30,7 @@ class SuperAdminServiceTest {
     @Mock private LoadUserPort loadUserPort;
     @Mock private SaveUserUseCase saveUserUseCase;
     @Mock private RoleQueryPort roleQueryPort;
-    @Mock private SaveAuthoritiesUseCase saveAuthoritiesUseCase;
+    @Mock private AuthoritiesUseCase authoritiesUseCase;
 
     private SuperAdminService superAdminService;
 
@@ -59,7 +59,7 @@ class SuperAdminServiceTest {
                 loadUserPort,
                 saveUserUseCase,
                 roleQueryPort,
-                saveAuthoritiesUseCase
+                authoritiesUseCase
         );
 
         registerSuperAdminInfos = new RegisterSuperAdminCommand(
@@ -136,10 +136,10 @@ class SuperAdminServiceTest {
             verify(loadUserPort).findUserByEmail(registerSuperAdminInfos.email());
             verify(saveUserUseCase).save(sampleCreateUserInfo, author);
             verify(roleQueryPort).findRoleByNameWithTenantNull(defaultRoleName);
-            verify(saveAuthoritiesUseCase, times(0)).saveRole(sampleCreateRole);
-            verify(saveAuthoritiesUseCase).assignedRoleToUser(sampleAssignRole);
+            verify(authoritiesUseCase, times(0)).saveRole(sampleCreateRole);
+            verify(authoritiesUseCase).assignedRoleToUser(sampleAssignRole);
             verify(roleQueryPort).findPermissionByCode(defaultPermissionCode);
-            verify(saveAuthoritiesUseCase, times(0)).savePermission(sampleCreatePermission, author);
+            verify(authoritiesUseCase, times(0)).savePermission(sampleCreatePermission, author);
             assertNotNull(actual);
             assertNotNull(loadUserPort.findUserByUsername(registerSuperAdminInfos.username()));
 
@@ -152,9 +152,9 @@ class SuperAdminServiceTest {
             when(loadUserPort.findUserByEmail(registerSuperAdminInfos.email())).thenReturn(Optional.empty());
             when(saveUserUseCase.save(sampleCreateUserInfo, author)).thenReturn(sampleUser);
             when(roleQueryPort.findRoleByNameWithTenantNull(defaultRoleName)).thenReturn(Optional.empty());
-            when(saveAuthoritiesUseCase.saveRole(sampleCreateRole)).thenReturn(sampleRole);
+            when(authoritiesUseCase.saveRole(sampleCreateRole)).thenReturn(sampleRole);
             when(roleQueryPort.findPermissionByCode(defaultPermissionCode)).thenReturn(Optional.empty());
-            when(saveAuthoritiesUseCase.savePermission(sampleCreatePermission, author)).thenReturn(samplePermission);
+            when(authoritiesUseCase.savePermission(sampleCreatePermission, author)).thenReturn(samplePermission);
 
             String actual =  superAdminService.register(registerSuperAdminInfos);
 
@@ -165,10 +165,10 @@ class SuperAdminServiceTest {
             verify(loadUserPort).findUserByEmail(registerSuperAdminInfos.email());
             verify(saveUserUseCase).save(sampleCreateUserInfo, author);
             verify(roleQueryPort).findRoleByNameWithTenantNull(defaultRoleName);
-            verify(saveAuthoritiesUseCase).saveRole(sampleCreateRole);
-            verify(saveAuthoritiesUseCase).assignedRoleToUser(sampleAssignRole);
+            verify(authoritiesUseCase).saveRole(sampleCreateRole);
+            verify(authoritiesUseCase).assignedRoleToUser(sampleAssignRole);
             verify(roleQueryPort).findPermissionByCode(defaultPermissionCode);
-            verify(saveAuthoritiesUseCase).savePermission(sampleCreatePermission, author);
+            verify(authoritiesUseCase).savePermission(sampleCreatePermission, author);
             assertNotNull(actual);
             assertNull(saveUserUseCase.save(sampleCreateUserInfo, author).getTenant());
             assertNotNull(loadUserPort.findUserByUsername(registerSuperAdminInfos.username()));

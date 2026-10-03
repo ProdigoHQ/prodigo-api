@@ -4,11 +4,13 @@ import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.AssignRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.CreateRoleCommand;
+import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.application.port.output.SavePermissionPort;
 import com.licode.prodigoerp.auth.application.port.output.SaveRolePort;
 import com.licode.prodigoerp.auth.domain.model.*;
+import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.module.application.port.input.ModuleLookUpUseCase;
 import com.licode.prodigoerp.module.domain.model.Module;
@@ -138,11 +140,19 @@ public class AuthoritiesService implements AuthoritiesUseCase {
             module = fetchedModule.get();
         }
 
+        // check if there is no permission duplicate in the db
+        // NOTE: permissionCode + resource should not be duplicate
+        Optional<Permission> permissionExist = roleQueryPort.findPermissionsByCodeAndResource(permissionCode.toUpperCase(), permissionCommand.resource().toUpperCase());
+        if (permissionExist.isPresent()) {
+            log.error("Permission with code {} for the resource {} already exists", permissionCode.toUpperCase(),  permissionCommand.resource().toUpperCase());
+            throw new ConflictException("Permission with code " + permissionCode.toUpperCase() + " already exists. Please choose another one");
+        }
+
         permission.setId(null);
-        permission.setCode(permissionCode);
+        permission.setCode(permissionCode.toUpperCase());
         permission.setDescription(permissionCommand.description());
-        permission.setAction(permissionCommand.action());
-        permission.setResource(permissionCommand.resource());
+        permission.setAction(permissionCommand.action().toUpperCase());
+        permission.setResource(permissionCommand.resource().toUpperCase());
         permission.setModule(module);
 
         permission.setCreatedAt(now);
@@ -187,6 +197,25 @@ public class AuthoritiesService implements AuthoritiesUseCase {
         rolePermission.setGrantedBy(assignRoleCommand.assignBy());
 
         savePermissionPort.assignPermissionToRole(rolePermission);
+    }
+
+    @Override
+    public PermissionSummaryCommand fetchPermissionSummary(UUID permissionId) {
+
+        Optional<Permission> permission = roleQueryPort.findPermissionById(permissionId);
+
+        if(permission.isEmpty()) {
+            log.error("Permission not found with id: {}", permissionId);
+            throw new NotFoundException("Permission not found with id: " + permissionId);
+        }
+
+        return new PermissionSummaryCommand(
+                permission.get().getId(),
+                permission.get().getCode(),
+                permission.get().getDescription(),
+                permission.get().getAction(),
+                permission.get().getResource()
+        );
     }
 
 
