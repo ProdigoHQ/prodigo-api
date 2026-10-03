@@ -98,6 +98,11 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
     }
 
     @Override
+    public void deletePermissionById(UUID permissionId) {
+        jpaPermissionRepository.deleteById(permissionId);
+    }
+
+    @Override
     @Transactional
     public Role saveRole(Role role) {
         RoleJpaEntity roleJpaEntity = jpaRoleRepository.save(

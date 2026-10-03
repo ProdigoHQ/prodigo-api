@@ -22,4 +22,5 @@ public interface RoleQueryPort {
     Optional<Permission> findPermissionByCode(String code);
     List<Permission> findPermissionsByModuleKey(String moduleKey);
     Optional<Permission> findPermissionsByCodeAndResource(String code, String resource);
+    void deletePermissionById(UUID permissionId);
 }

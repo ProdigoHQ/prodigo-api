@@ -17,4 +17,6 @@ public interface AuthoritiesUseCase {
     void assignedPermissionToRole(UUID permissionId, AssignRoleCommand assignRoleCommand);
 
     PermissionSummaryCommand fetchPermissionSummary(UUID permissionId);
+
+    void deletePermission(UUID permissionId);
 }

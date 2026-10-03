@@ -10,7 +10,6 @@ import com.licode.prodigoerp.common.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -47,6 +46,10 @@ public class PermissionController {
 
     @DeleteMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> deletePermission(@PathVariable UUID permissionId) {
-        
+        // TODO: two paths to verify : soft delete and also check for system permissions that should never be deleted
+
+        authoritiesUseCase.deletePermission(permissionId);
+
+        return ResponseEntity.ok().build();
     }
 }

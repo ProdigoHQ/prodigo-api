@@ -12,6 +12,7 @@ import com.licode.prodigoerp.auth.application.port.output.SaveRolePort;
 import com.licode.prodigoerp.auth.domain.model.*;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.common.exception.NotFoundException;
+import com.licode.prodigoerp.common.security.SecurityUtils;
 import com.licode.prodigoerp.module.application.port.input.ModuleLookUpUseCase;
 import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.input.TenantLookUpUseCase;
@@ -216,6 +217,13 @@ public class AuthoritiesService implements AuthoritiesUseCase {
                 permission.get().getAction(),
                 permission.get().getResource()
         );
+    }
+
+    @Override
+    public void deletePermission(UUID permissionId) {
+        roleQueryPort.deletePermissionById(permissionId);
+        String currentUserLogin = SecurityUtils.getCurrentUser().username();
+        log.info("Permission with id: {} has been deleted by {}", permissionId, currentUserLogin);
     }
 
 
