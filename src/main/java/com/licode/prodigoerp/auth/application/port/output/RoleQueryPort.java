@@ -2,6 +2,7 @@ package com.licode.prodigoerp.auth.application.port.output;
 
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.Role;
+import com.licode.prodigoerp.auth.domain.model.RolePermission;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,5 +23,8 @@ public interface RoleQueryPort {
     Optional<Permission> findPermissionByCode(String code);
     List<Permission> findPermissionsByModuleKey(String moduleKey);
     Optional<Permission> findPermissionsByCodeAndResource(String code, String resource);
+    List<Permission> findPermissionsByRoleId(UUID roleId);
+
     void deletePermissionById(UUID permissionId);
+
 }

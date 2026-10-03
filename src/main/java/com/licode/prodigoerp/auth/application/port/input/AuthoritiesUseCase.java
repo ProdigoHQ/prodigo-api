@@ -1,9 +1,6 @@
 package com.licode.prodigoerp.auth.application.port.input;
 
-import com.licode.prodigoerp.auth.application.port.input.command.AssignRoleCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.CreateRoleCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.Role;
 
@@ -15,8 +12,7 @@ public interface AuthoritiesUseCase {
     void assignedRoleToUser(AssignRoleCommand assignRoleCommand);
     Permission  savePermission(CreatePermissionCommand permissionCommand, String author);
     void assignedPermissionToRole(UUID permissionId, AssignRoleCommand assignRoleCommand);
-
     PermissionSummaryCommand fetchPermissionSummary(UUID permissionId);
-
+    RoleSummaryCommand fetchRoleSummary(UUID roleId, UUID tenantId);
     void deletePermission(UUID permissionId);
 }

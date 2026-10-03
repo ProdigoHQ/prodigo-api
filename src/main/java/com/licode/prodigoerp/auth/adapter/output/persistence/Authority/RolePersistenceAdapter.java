@@ -98,6 +98,13 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
     }
 
     @Override
+    public List<Permission> findPermissionsByRoleId(UUID roleId) {
+        List<PermissionJpaEntity> permissionJpaEntityList = jpaRolePermissionRepository.findRolePermissionJpaEntitiesByRoleJpaEntity_Id(roleId);
+
+        return permissionJpaEntityList.stream().map(PermissionJpaMapper::toDomainModel).toList();
+    }
+
+    @Override
     public void deletePermissionById(UUID permissionId) {
         jpaPermissionRepository.deleteById(permissionId);
     }

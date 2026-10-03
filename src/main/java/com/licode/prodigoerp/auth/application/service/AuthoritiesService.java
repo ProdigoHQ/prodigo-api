@@ -1,10 +1,7 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.AssignRoleCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.CreateRoleCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.application.port.output.SavePermissionPort;
@@ -23,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -216,6 +215,43 @@ public class AuthoritiesService implements AuthoritiesUseCase {
                 permission.get().getDescription(),
                 permission.get().getAction(),
                 permission.get().getResource()
+        );
+    }
+
+    @Override
+    public RoleSummaryCommand fetchRoleSummary(UUID roleId, UUID tenantId) {
+
+        // we have two paths here, one for the system role and tenant role
+        Optional<Role> role;
+
+        if(tenantId == null){
+            role = roleQueryPort.findRoleByIdWithTenantNull(roleId);
+        }else{
+            role = roleQueryPort.findRoleByIdAndTenantId(roleId, tenantId);
+        }
+
+        if (role.isEmpty()) {
+            log.error("Role not found with id: {}", roleId);
+            throw new NotFoundException("Role not found with id: " + roleId);
+        }
+
+        // fetched all the permissions related to the role found
+        List<Permission> permissions = roleQueryPort.findPermissionsByRoleId(role.get().getId());
+
+        List<PermissionSummaryCommand> permissionSummaries = permissions.stream().map(permission -> new PermissionSummaryCommand(
+                permission.getId(),
+                permission.getCode(),
+                permission.getDescription(),
+                permission.getAction(),
+                permission.getResource()
+        )).toList();
+
+        return new RoleSummaryCommand(
+                role.get().getId(),
+                role.get().getName(),
+                role.get().getDescription(),
+                role.get().getCreatedAt(),
+                permissionSummaries
         );
     }
 
