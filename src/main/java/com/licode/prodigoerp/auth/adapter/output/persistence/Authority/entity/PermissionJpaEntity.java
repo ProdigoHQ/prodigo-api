@@ -50,6 +50,9 @@ public class PermissionJpaEntity {
     @JoinColumn(name = "module_id")
     private ModuleJpaEntity moduleJpaEntity;
 
+    @Column(name = "tenant_assignable", nullable = false)
+    private boolean tenantAssignable;
+
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at", nullable = false)

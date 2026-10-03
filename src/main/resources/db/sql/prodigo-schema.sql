@@ -152,6 +152,9 @@ ALTER TABLE "permissions"
         FOREIGN KEY("module_id") REFERENCES "modules"("id")
             ON DELETE CASCADE;
 
+ALTER TABLE permissions ADD COLUMN tenant_assignable BOOLEAN NOT NULL DEFAULT FALSE;
+UPDATE permissions SET tenant_assignable = TRUE WHERE module_id IS NOT NULL;  -- ERP.* stays false
+CREATE INDEX idx_role_permission_permission_id ON role_permissions (permission_id);
 
 CREATE TABLE IF NOT EXISTS "role_permissions" (
     "id" UUID PRIMARY KEY NOT NULL,

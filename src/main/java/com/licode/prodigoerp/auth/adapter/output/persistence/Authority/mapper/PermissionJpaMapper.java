@@ -15,6 +15,7 @@ public class PermissionJpaMapper {
         jpaEntity.setAction(permission.getAction());
         jpaEntity.setResource(permission.getResource());
         jpaEntity.setModuleJpaEntity(permission.getModule() == null ? null : ModuleJpaMapper.toJpaEntity(permission.getModule()));
+        jpaEntity.setTenantAssignable(permission.isTenantAssignable());
         jpaEntity.setCreatedAt(permission.getCreatedAt());
         jpaEntity.setUpdatedAt(permission.getUpdatedAt());
         jpaEntity.setCreatedBy(permission.getCreatedBy());
@@ -33,6 +34,7 @@ public class PermissionJpaMapper {
         permission.setAction(jpaEntity.getAction());
         permission.setResource(jpaEntity.getResource());
         permission.setModule(jpaEntity.getModuleJpaEntity() == null ? null : ModuleJpaMapper.toDomainModel(jpaEntity.getModuleJpaEntity()));
+        permission.setTenantAssignable(jpaEntity.isTenantAssignable());
         permission.setCreatedAt(jpaEntity.getCreatedAt());
         permission.setUpdatedAt(jpaEntity.getUpdatedAt());
         permission.setCreatedBy(jpaEntity.getCreatedBy());

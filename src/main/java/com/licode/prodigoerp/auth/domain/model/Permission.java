@@ -17,6 +17,7 @@ public class Permission {
     private String action;
     private String resource;
     private Module module;
+    private boolean tenantAssignable;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
