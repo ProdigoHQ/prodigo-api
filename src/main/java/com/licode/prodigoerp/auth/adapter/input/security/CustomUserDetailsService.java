@@ -1,6 +1,7 @@
 package com.licode.prodigoerp.auth.adapter.input.security;
 
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
+import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.NotFoundException;
@@ -23,6 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
    private final LoadUserPort loadUserPort;
    private final RoleQueryPort roleQueryPort;
+   private final PermissionPersistencePort permissionPersistencePort;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
@@ -36,7 +38,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserPrincipal buildPrincipal(User user){
 
         List<String> roles = roleQueryPort.findActiveRoleNames(user.getId());
-        List<String> permissions = roleQueryPort.findActivePermissionCodes(user.getId());
+        List<String> permissions = permissionPersistencePort.findActivePermissionCodes(user.getId());
 
 
         // concatenating the roles and permissions in one collection to be used as granted authority

@@ -4,10 +4,7 @@ import com.licode.prodigoerp.auth.application.port.input.RegisterUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
-import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
-import com.licode.prodigoerp.auth.application.port.output.RefreshTokenStorePort;
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
-import com.licode.prodigoerp.auth.application.port.output.TokenGeneratorPort;
+import com.licode.prodigoerp.auth.application.port.output.*;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.RefreshToken;
 import com.licode.prodigoerp.auth.domain.model.Role;
@@ -45,6 +42,7 @@ public class UserService implements RegisterUserUseCase {
     private final AuthoritiesUseCase authoritiesUseCase;
     private final TokenGeneratorPort  tokenGeneratorPort;
     private final RoleQueryPort roleQueryPort;
+    private final PermissionPersistencePort permissionPersistencePort;
 
 
 
@@ -162,7 +160,7 @@ public class UserService implements RegisterUserUseCase {
         String accessToken = tokenGeneratorPort.generateAccessToken(fetchedUser);
 
         List<String> roles = roleQueryPort.findActiveRoleNames(fetchedUser.getId());
-        List<String> permissions = roleQueryPort.findActivePermissionCodes(fetchedUser.getId());
+        List<String> permissions = permissionPersistencePort.findActivePermissionCodes(fetchedUser.getId());
 
         return new AuthResponseCommand(
                 fetchedUser.getId(),

@@ -7,10 +7,7 @@ import com.licode.prodigoerp.auth.adapter.input.rest.dto.RefreshResponseDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthWebMapper;
 import com.licode.prodigoerp.auth.application.port.input.RefreshTokenUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.RefreshResponseCommand;
-import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
-import com.licode.prodigoerp.auth.application.port.output.RefreshTokenStorePort;
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
-import com.licode.prodigoerp.auth.application.port.output.TokenGeneratorPort;
+import com.licode.prodigoerp.auth.application.port.output.*;
 import com.licode.prodigoerp.auth.domain.model.RefreshToken;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.NotFoundException;
@@ -49,6 +46,7 @@ public class AuthController {
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final AuthWebMapper authWebMapper;
     private final RoleQueryPort roleQueryPort;
+    private final PermissionPersistencePort permissionPersistencePort;
 
     @PostMapping(value = "/login", version = "1.0")
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
@@ -99,7 +97,7 @@ public class AuthController {
         String tenantSlug = user.get().getTenant() == null ? null : user.get().getTenant().getSlug();
 
         List<String> roles = roleQueryPort.findActiveRoleNames(user.get().getId());
-        List<String> permissions = roleQueryPort.findActivePermissionCodes(user.get().getId());
+        List<String> permissions = permissionPersistencePort.findActivePermissionCodes(user.get().getId());
 
         return  ResponseEntity.ok().header(
                 HttpHeaders.SET_COOKIE, responseCookie.toString()

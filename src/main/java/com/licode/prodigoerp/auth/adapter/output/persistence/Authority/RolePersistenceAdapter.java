@@ -42,11 +42,6 @@ public class RolePersistenceAdapter implements RoleQueryPort, SaveRolePort, Save
     }
 
     @Override
-    public List<String> findActivePermissionCodes(UUID userId) {
-        return jpaUserRoleRepository.findActivePermissionCodesByUserId(userId);
-    }
-
-    @Override
     public Optional<Role> findRoleByIdAndTenantId(UUID roleId, UUID tenantId) {
         Optional<RoleJpaEntity> roleJpaEntity =  jpaRoleRepository.findRoleJpaEntitiesByIdAndTenantJpaEntity_Id(roleId, tenantId);
 

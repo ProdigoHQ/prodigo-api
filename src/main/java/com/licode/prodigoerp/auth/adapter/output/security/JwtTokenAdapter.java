@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.auth.adapter.output.security;
 
+import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.application.port.output.TokenGeneratorPort;
 import com.licode.prodigoerp.auth.domain.model.User;
@@ -17,13 +18,14 @@ public class JwtTokenAdapter implements TokenGeneratorPort {
 
     private final JwtUtil jwtUtil;
     private final RoleQueryPort roleQueryPort;
+    private final PermissionPersistencePort permissionPersistencePort;
 
 
     @Override
     public String generateAccessToken(User user) {
 
         List<String> roles = roleQueryPort.findActiveRoleNames(user.getId());
-        List<String> permissions = roleQueryPort.findActivePermissionCodes(user.getId());
+        List<String> permissions = permissionPersistencePort.findActivePermissionCodes(user.getId());
 
         UUID tenantId = user.getTenant() != null ? user.getTenant().getId() : null;
         String tenantSlug = user.getTenant() != null ? user.getTenant().getSlug() : null;
