@@ -1,9 +1,9 @@
 <configuration>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/log/api-dev.log</file>
+        <file>/logs/api-dev.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!-- daily rollover and up to 10MB per file -->
-            <fileNamePattern>/log/api-dev.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>/logs/api-dev.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>10</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>

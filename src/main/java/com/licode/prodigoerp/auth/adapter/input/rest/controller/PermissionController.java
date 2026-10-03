@@ -2,7 +2,7 @@ package com.licode.prodigoerp.auth.adapter.input.rest.controller;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.CreatePermissionDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.PermissionWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
 import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
 import com.licode.prodigoerp.auth.domain.model.Permission;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PermissionController {
 
-    private final PermissionWebMapper permissionWebMapper;
+    private final AuthoritiesWebMapper authoritiesWebMapper;
     private final AuthoritiesUseCase authoritiesUseCase;
 
 
@@ -28,7 +28,7 @@ public class PermissionController {
 
         PermissionSummaryCommand permissionDetails = authoritiesUseCase.fetchPermissionSummary(permissionId);
 
-        return ResponseEntity.ok(permissionWebMapper.toPermissionSummaryDto(permissionDetails));
+        return ResponseEntity.ok(authoritiesWebMapper.toPermissionSummaryDto(permissionDetails));
     }
 
     @PostMapping(value = "/", version = "1.0")
@@ -37,11 +37,11 @@ public class PermissionController {
         String currentUserLogin = SecurityUtils.getCurrentUser().username();
 
         Permission createdPermission = authoritiesUseCase.savePermission(
-                permissionWebMapper.toCreatePermissionCommand(createPermissionDto),
+                authoritiesWebMapper.toCreatePermissionCommand(createPermissionDto),
                 currentUserLogin);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(permissionWebMapper.toPermissionSummaryDto(createdPermission));
+                .body(authoritiesWebMapper.toPermissionSummaryDto(createdPermission));
     }
 
     @DeleteMapping(value = "/{permissionId}", version = "1.0")

@@ -8,7 +8,7 @@ import com.licode.prodigoerp.auth.domain.model.Permission;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface PermissionWebMapper {
+public interface AuthoritiesWebMapper {
 
     PermissionSummaryDto toPermissionSummaryDto(PermissionSummaryCommand permissionSummaryCommand);
     PermissionSummaryDto toPermissionSummaryDto(Permission permission);
