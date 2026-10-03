@@ -2,7 +2,7 @@ package com.licode.prodigoerp.auth.adapter.input.security;
 
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
+import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public class CustomUserDetailsService implements UserDetailsService {
 
    private final LoadUserPort loadUserPort;
-   private final RoleQueryPort roleQueryPort;
+   private final RolePersistencePort rolePersistencePort;
    private final PermissionPersistencePort permissionPersistencePort;
 
     @Override
@@ -37,7 +37,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public UserPrincipal buildPrincipal(User user){
 
-        List<String> roles = roleQueryPort.findActiveRoleNames(user.getId());
+        List<String> roles = rolePersistencePort.findActiveRoleNames(user.getId());
         List<String> permissions = permissionPersistencePort.findActivePermissionCodes(user.getId());
 
 

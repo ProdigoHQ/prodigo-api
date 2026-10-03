@@ -45,7 +45,7 @@ public class AuthController {
     private final TokenGeneratorPort tokenGeneratorPort;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final AuthWebMapper authWebMapper;
-    private final RoleQueryPort roleQueryPort;
+    private final RolePersistencePort  rolePersistencePort;
     private final PermissionPersistencePort permissionPersistencePort;
 
     @PostMapping(value = "/login", version = "1.0")
@@ -96,7 +96,7 @@ public class AuthController {
 
         String tenantSlug = user.get().getTenant() == null ? null : user.get().getTenant().getSlug();
 
-        List<String> roles = roleQueryPort.findActiveRoleNames(user.get().getId());
+        List<String> roles = rolePersistencePort.findActiveRoleNames(user.get().getId());
         List<String> permissions = permissionPersistencePort.findActivePermissionCodes(user.get().getId());
 
         return  ResponseEntity.ok().header(

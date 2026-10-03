@@ -41,7 +41,7 @@ public class UserService implements RegisterUserUseCase {
     private final SaveUserUseCase saveUserUseCase;
     private final AuthoritiesUseCase authoritiesUseCase;
     private final TokenGeneratorPort  tokenGeneratorPort;
-    private final RoleQueryPort roleQueryPort;
+    private final RolePersistencePort rolePersistencePort;
     private final PermissionPersistencePort permissionPersistencePort;
 
 
@@ -159,7 +159,7 @@ public class UserService implements RegisterUserUseCase {
         RefreshToken refreshToken = refreshTokenStorePort.createRefreshToken(fetchedUser);
         String accessToken = tokenGeneratorPort.generateAccessToken(fetchedUser);
 
-        List<String> roles = roleQueryPort.findActiveRoleNames(fetchedUser.getId());
+        List<String> roles = rolePersistencePort.findActiveRoleNames(fetchedUser.getId());
         List<String> permissions = permissionPersistencePort.findActivePermissionCodes(fetchedUser.getId());
 
         return new AuthResponseCommand(
