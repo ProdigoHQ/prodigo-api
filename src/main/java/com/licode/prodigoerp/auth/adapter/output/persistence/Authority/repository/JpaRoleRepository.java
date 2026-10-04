@@ -11,6 +11,7 @@ public interface JpaRoleRepository extends JpaRepository<RoleJpaEntity, UUID> {
 
     // system roles: tenant is NULL
     Optional<RoleJpaEntity> findRoleJpaEntityByIdAndTenantJpaEntity_IdNull(UUID roleId);
+    Optional<RoleJpaEntity> findAllByNameIgnoreCaseAndTenantJpaEntityNull(String name);
     List<RoleJpaEntity> findAllByTenantJpaEntityNullOrderByNameAsc();
     boolean existsByNameIgnoreCaseAndTenantJpaEntityNull(String name);
 

@@ -28,4 +28,6 @@ public interface JpaUserRoleRepository extends JpaRepository<UserRoleJpaEntity, 
     List<String> findActivePermissionCodesByUserId(@Param("userId") UUID userId);
 
     boolean existsByRoleJpaEntity_Id(UUID roleId);
+
+    boolean existsByUserJpaEntity_IdAndRoleJpaEntity_IdAndTenantId(UUID userId, UUID roleId, UUID tenantId);
 }

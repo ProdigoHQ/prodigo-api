@@ -11,6 +11,7 @@ import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.RolePermission;
+import com.licode.prodigoerp.auth.domain.model.UserRole;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -70,6 +71,11 @@ public class RolePersistenceAdapter implements RolePersistencePort {
     }
 
     @Override
+    public Optional<Role> findSystemRoleByName(String name) {
+        return Optional.empty();
+    }
+
+    @Override
     public List<Permission> findPermissionsByRoleId(UUID roleId) {
         return jpaRolePermissionRepository.findRolePermissionJpaEntitiesByRoleJpaEntity_Id(roleId)
                 .stream().map(PermissionJpaMapper::toDomainModel)
@@ -94,6 +100,16 @@ public class RolePersistenceAdapter implements RolePersistencePort {
     @Override
     public boolean rolePermissionExists(UUID roleId, UUID permissionId) {
         return jpaRolePermissionRepository.existsByRoleJpaEntity_IdAndPermissionJpaEntity_Id(roleId, permissionId);
+    }
+
+    @Override
+    public boolean userRoleExists(UUID userId, UUID roleID, UUID tenantId) {
+        return false;
+    }
+
+    @Override
+    public void saveUserRole(UserRole userRole) {
+
     }
 
     @Override
