@@ -17,7 +17,7 @@ public class RolePermissionLinker {
 
     private final RolePersistencePort rolePort;
 
-    void link(Role role, Permission permission, String grantedBy){
+    public void link(Role role, Permission permission, String grantedBy){
 
         if(rolePort.rolePermissionExists(role.getId(), permission.getId())){
             throw new ConflictException("Permission " + permission.getCode() + " is already assigned to this role");
@@ -34,7 +34,7 @@ public class RolePermissionLinker {
         rolePort.saveRolePermission(rp);
     }
 
-    void unlink(Role role, Permission permission){
+    public void unlink(Role role, Permission permission){
         if (!rolePort.rolePermissionExists(role.getId(), permission.getId())) {
             throw new NotFoundException("Permission is not assigned to this role");
         }
