@@ -38,8 +38,6 @@ public class UserService implements RegisterUserUseCase {
     private final TenantEntitlementUseCase  tenantEntitlementUseCase;
     private final TenantModuleSubCreateUseCase tenantModuleSubCreateUseCase;
     private final RefreshTokenStorePort refreshTokenStorePort;
-    private final SaveUserUseCase saveUserUseCase;
-    private final AuthoritiesUseCase authoritiesUseCase;
     private final TokenGeneratorPort  tokenGeneratorPort;
     private final RolePersistencePort rolePersistencePort;
     private final PermissionPersistencePort permissionPersistencePort;

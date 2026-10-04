@@ -24,10 +24,7 @@ import java.util.Optional;
 public class SuperAdminService implements RegisterSuperAdminUseCase {
 
     private final LoadUserPort loadUserPort;
-    private final SaveUserUseCase saveUserUseCase;
     private final PermissionPersistencePort permissionPersistencePort;
-    private final RoleQueryPort roleQueryPort;
-    private final AuthoritiesUseCase authoritiesUseCase;
 
     @Override
     @Transactional
