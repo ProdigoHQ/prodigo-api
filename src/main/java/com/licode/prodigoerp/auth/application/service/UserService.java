@@ -1,8 +1,7 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.RegisterUserUseCase;
-import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
-import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
+import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.*;
 import com.licode.prodigoerp.auth.domain.model.Permission;

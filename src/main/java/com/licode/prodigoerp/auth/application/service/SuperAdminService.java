@@ -1,12 +1,10 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.RegisterSuperAdminUseCase;
-import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
-import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
+import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.User;
