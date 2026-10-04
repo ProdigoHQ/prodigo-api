@@ -39,4 +39,9 @@ public class SecurityCurrentUserAdapter implements CurrentUserPort {
                 .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
                 .anyMatch(a -> a.equals(code));
     }
+
+    @Override
+    public String usernameOrSystem() {
+        return SecurityUtils.getCurrentUsernameOrElseSysName();
+    }
 }
