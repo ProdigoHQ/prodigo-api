@@ -47,12 +47,16 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
 
     @Override
     public List<Permission> findAllByCodeIn(Collection<String> codes) {
-        return List.of();
+        return jpaPermissionRepository.findAllByCodeIn(codes)
+                .stream().map(PermissionJpaMapper::toDomainModel)
+                .toList();
     }
 
     @Override
     public List<Permission> findAllByCodeStartingWith(String prefix) {
-        return List.of();
+        return jpaPermissionRepository.findAllByCodeStartingWith(prefix)
+                .stream().map(PermissionJpaMapper::toDomainModel)
+                .toList();
     }
 
     @Override

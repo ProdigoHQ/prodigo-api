@@ -4,6 +4,7 @@ import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.entity.Ro
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.PermissionJpaMapper;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.RoleJpaMapper;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.RolePermissionJpaMapper;
+import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.mapper.UserRoleJpaMapper;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaRolePermissionRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaRoleRepository;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository.JpaUserRoleRepository;
@@ -72,7 +73,8 @@ public class RolePersistenceAdapter implements RolePersistencePort {
 
     @Override
     public Optional<Role> findSystemRoleByName(String name) {
-        return Optional.empty();
+        return jpaRoleRepository.findAllByNameIgnoreCaseAndTenantJpaEntityNull(name)
+                .map(RoleJpaMapper::toDomainModel);
     }
 
     @Override
@@ -104,12 +106,12 @@ public class RolePersistenceAdapter implements RolePersistencePort {
 
     @Override
     public boolean userRoleExists(UUID userId, UUID roleID, UUID tenantId) {
-        return false;
+        return jpaUserRoleRepository.existsByUserJpaEntity_IdAndRoleJpaEntity_IdAndTenantId(userId, roleID, tenantId);
     }
 
     @Override
     public void saveUserRole(UserRole userRole) {
-
+        jpaUserRoleRepository.save(UserRoleJpaMapper.toJpaEntity(userRole));
     }
 
     @Override
