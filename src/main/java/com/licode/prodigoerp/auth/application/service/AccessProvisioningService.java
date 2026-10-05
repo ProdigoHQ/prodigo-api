@@ -152,7 +152,7 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
             p.setCreatedBy("SYSTEM");
             p.setUpdatedBy("SYSTEM");
             permissionPort.save(p);
-            
+
             log.info("Permission {} seeded", code);
         }
         return code;

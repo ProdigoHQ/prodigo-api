@@ -41,7 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class OnboardingServiceTest {
 
     @Mock private  LoadUserPort loadUserPort;
     @Mock private  TenantLookUpUseCase tenantLookUpUseCase;
@@ -54,7 +54,7 @@ class UserServiceTest {
     @Mock private  TokenGeneratorPort tokenGeneratorPort;
     @Mock private RoleQueryPort roleQueryPort;
 
-    private UserService userService;  // what we want to test
+    private OnboardingService onboardingService;  // what we want to test
 
     private static final String ACTOR = "PRODIGO_ERP_API";
 
@@ -78,7 +78,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp(){
-        userService = new UserService(
+        onboardingService = new OnboardingService(
                 loadUserPort,
                 tenantLookUpUseCase,
                 createTenantUseCase,
@@ -188,7 +188,7 @@ class UserServiceTest {
 
             // When
 
-            AuthResponseCommand response = userService.register(registerUserCommand);
+            AuthResponseCommand response = onboardingService.register(registerUserCommand);
 
             // then : the response reflects what the mocked collaborators returned
             verify(createTenantUseCase).create(any(CreateTenantCommand.class));
@@ -216,7 +216,7 @@ class UserServiceTest {
                     .thenReturn(Optional.of(user));
 
             ConflictException ex = assertThrows(ConflictException.class,
-                    () -> userService.register(registerUserCommand));
+                    () -> onboardingService.register(registerUserCommand));
 
             assertEquals("Username already exists", ex.getMessage());
 //            verify(createTenantUseCase, never()).create(any());
@@ -234,7 +234,7 @@ class UserServiceTest {
                     .thenReturn(Optional.of(user));
 
             ConflictException ex = assertThrows(ConflictException.class,
-                    () -> userService.register(registerUserCommand));
+                    () -> onboardingService.register(registerUserCommand));
 
             assertEquals("Email already exists", ex.getMessage());
 //            verify(createTenantUseCase, never()).create(any());
@@ -252,7 +252,7 @@ class UserServiceTest {
                     .thenReturn(true);
 
             ConflictException ex = assertThrows(ConflictException.class,
-                    () -> userService.register(registerUserCommand));
+                    () -> onboardingService.register(registerUserCommand));
 
             assertEquals("Company Name already exists", ex.getMessage());
 //            verify(createTenantUseCase, never()).create(any());
@@ -284,7 +284,7 @@ class UserServiceTest {
                     .thenReturn(Optional.empty());
 
             NotFoundException ex = assertThrows(NotFoundException.class,
-                    () -> userService.register(registerUserCommand));
+                    () -> onboardingService.register(registerUserCommand));
 
             assertEquals("Permission with code CRM.MODULE.CRUD not found", ex.getMessage());
             verifyNoMoreInteractions(roleQueryPort);
