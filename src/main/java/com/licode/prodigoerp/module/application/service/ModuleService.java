@@ -1,8 +1,9 @@
 package com.licode.prodigoerp.module.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.PermissionCatalogUseCase;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.common.exception.NotFoundException;
+import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
 import com.licode.prodigoerp.module.application.port.input.ModuleCreateUseCase;
 import com.licode.prodigoerp.module.application.port.input.ModuleLookUpUseCase;
 import com.licode.prodigoerp.module.application.port.input.ModuleSubscriptionUseCase;
@@ -32,16 +33,14 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
     private final ModuleLookUpUseCase moduleLookUpUseCase;
     private final TenantLookUpUseCase tenantLookUpUseCase;
     private final ModuleSubscriptionUseCase moduleSubscriptionUseCase;
-    private final AuthoritiesUseCase authoritiesUseCase;
+    private final PermissionCatalogUseCase permissionCatalogUseCase;
+    private final CurrentUserPort currentUser;
     private final ModuleQueryPort moduleQueryPort;
     private final SaveModulePort saveModulePort;
 
     @Override
     @Transactional
     public Map<String, Module> createTenantModuleSubscription(UUID tenantId, List<SelectedModuleCommand> selectedModuleCommands) {
-
-        // TODO : need to fetch the person connected
-        String actor = "PRODIGO_ERP_API";
 
         // to keep track of all the modules subscribe by the tenant
         Map<String, Module> allModuleSubscriptions = new HashMap<>();
@@ -77,7 +76,6 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
 
             allModuleSubscriptions.put(selectedModule.getModuleKey(), selectedModule);
 
-            // then we need to save the moduleSubscription
             // TODO: Figure out to relate the currency depending on the user (Tenant) country
             CreateModuleSubCommand createModuleSubCommand = new CreateModuleSubCommand(
                     tenant,
@@ -104,8 +102,7 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
             throw new ConflictException("Module already exists with this key: " + registerModuleCommand.moduleKey());
         }
 
-        //  Here we check if there is a superAdmin connected or else we take the system default name
-        String actor = "PRODIGO_ERP_API"; // TODO : need to check this with securityUtils
+        String actor = currentUser.usernameOrSystem();
 
         Module newModule = new Module();
         Instant now = Instant.now();
@@ -126,9 +123,7 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
 
         // We need to generate all permissions for the module created
         registerModuleCommand.createPermissions()
-                .forEach(createdPermission -> {
-                    authoritiesUseCase.savePermission(createdPermission, actor);
-                });
+                .forEach(permissionCatalogUseCase::create);
 
         return createdModule;
     }

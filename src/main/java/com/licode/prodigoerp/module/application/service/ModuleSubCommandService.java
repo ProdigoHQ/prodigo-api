@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.module.application.service;
 
+import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
 import com.licode.prodigoerp.module.application.port.input.ModuleSubscriptionUseCase;
 import com.licode.prodigoerp.module.application.port.output.ModuleSubscriptionCreatePort;
 import com.licode.prodigoerp.module.application.port.input.command.CreateModuleSubCommand;
@@ -14,14 +15,14 @@ import java.time.Instant;
 public class ModuleSubCommandService implements ModuleSubscriptionUseCase {
 
     private final ModuleSubscriptionCreatePort moduleSubscriptionCreatePort;
+    private final CurrentUserPort currentUser;
 
     @Override
-    public ModuleSubscription createModuleSubscription(CreateModuleSubCommand createModuleSubCommand) {
+    public void createModuleSubscription(CreateModuleSubCommand createModuleSubCommand) {
 
-        // TODO : need to fetch the person connected or take the system name
-        String actor = "PRODIGO_ERP_API";
+        String actor = currentUser.usernameOrSystem();
 
-        Instant instant = Instant.now();
+        Instant now = Instant.now();
 
         ModuleSubscription moduleSubscription = new ModuleSubscription();
         moduleSubscription.setId(null);
@@ -34,16 +35,16 @@ public class ModuleSubCommandService implements ModuleSubscriptionUseCase {
         moduleSubscription.setPrice(createModuleSubCommand.price());
         moduleSubscription.setCurrency(createModuleSubCommand.currency());
 
-        moduleSubscription.setActivatedAt(instant);
-        moduleSubscription.setExpiresAt(Instant.now().plusSeconds(2592000)); // TODO : Free Plan never expires
+        moduleSubscription.setActivatedAt(now);
+        moduleSubscription.setExpiresAt(createModuleSubCommand.isFree()
+                ? null
+                : now.plusSeconds(2592000));
 
-        moduleSubscription.setCreatedAt(instant);
-        moduleSubscription.setUpdatedAt(instant);
+        moduleSubscription.setCreatedAt(now);
+        moduleSubscription.setUpdatedAt(now);
         moduleSubscription.setCreatedBy(actor);
         moduleSubscription.setUpdatedBy(actor);
 
-
-
-        return moduleSubscriptionCreatePort.create(moduleSubscription);
+        moduleSubscriptionCreatePort.create(moduleSubscription);
     }
 }
