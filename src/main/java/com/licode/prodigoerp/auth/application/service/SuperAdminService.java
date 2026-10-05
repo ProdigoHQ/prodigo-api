@@ -1,20 +1,19 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.RegisterSuperAdminUseCase;
+import com.licode.prodigoerp.auth.application.port.input.internal.AccessProvisioningUseCase;
 import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
-import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
-import com.licode.prodigoerp.auth.domain.model.Permission;
-import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.ConflictException;
+import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -22,92 +21,43 @@ import java.util.Optional;
 public class SuperAdminService implements RegisterSuperAdminUseCase {
 
     private final LoadUserPort loadUserPort;
-    private final PermissionPersistencePort permissionPersistencePort;
+    private final SaveUserUseCase saveUserUseCase;
+    private final AccessProvisioningUseCase provisioning;
+    private final CurrentUserPort currentUser;
 
     @Override
     @Transactional
-    public String register(RegisterSuperAdminCommand registerSuperAdminCommand) {
+    public String register(RegisterSuperAdminCommand cmd) {
 
-        // check if the email, username already exist in the db
-        if(loadUserPort.findUserByUsername(registerSuperAdminCommand.username()).isPresent()){
-            log.error("Username {} already exists", registerSuperAdminCommand.username());
+        if(loadUserPort.findUserByUsername(cmd.username()).isPresent()){
+            log.error("Username {} already exists", cmd.username());
             throw new ConflictException("Username already exists, please create another username");
         }
 
-        if(loadUserPort.findUserByEmail(registerSuperAdminCommand.email()).isPresent() ) {
-            log.error("Email {} already exists", registerSuperAdminCommand.email());
+        if(loadUserPort.findUserByEmail(cmd.email()).isPresent() ) {
+            log.error("Email {} already exists", cmd.email());
             throw new ConflictException("Email already exists,  please try another email");
         };
 
-        // TODO: need to get the username of the person connected
-        String author = "PRODIGO_ERP_API";
+        String author = currentUser.usernameOrSystem();
 
         User fetchedUser = saveUserUseCase.save(
                 new CreateUserCommand(
-                        registerSuperAdminCommand.username(),
+                        cmd.username(),
                         null,
-                        registerSuperAdminCommand.email(),
-                        registerSuperAdminCommand.password(),
-                        registerSuperAdminCommand.firstName(),
-                        registerSuperAdminCommand.lastName(),
+                        cmd.email(),
+                        cmd.password(),
+                        cmd.firstName(),
+                        cmd.lastName(),
                         true
                 ),
                 author
         );
 
-        // We need to create/assigne the default super admin role and permissions
-        String defaultRoleName = "SUPER_ADMIN";
-        String defaultPermissionCode = "ERP.SYSTEM.READ";
+        UUID roleId = provisioning.ensureSuperAdminRole(author);
+        provisioning.assignRoleToUser(fetchedUser.getId(), roleId, null, author);
 
-        // need to fetch if the default role already exist
-        Optional<Role> fetchedRole = roleQueryPort.findRoleByNameWithTenantNull(defaultRoleName);
-
-        // get the role if already exist
-        // orElse create  the default role
-        Role defaultRole = fetchedRole.orElseGet(() -> authoritiesUseCase.saveRole(
-                new CreateRoleCommand(
-                        defaultRoleName,
-                        null,
-                        "SUPER_ADMIN : The Default role to access the ERP System Dashboard",
-                        true,
-                        author
-                )
-        ));
-
-        // Assign the role to the user
-        authoritiesUseCase.assignedRoleToUser(
-                new AssignRoleCommand(
-                        fetchedUser.getId(),
-                        defaultRole.getId(),
-                        null,
-                        author
-                )
-        );
-
-        // Then we fetched/create the default permission
-        Optional<Permission> fetchedPermission = permissionPersistencePort.findByCode(defaultPermissionCode);
-
-        Permission defaultPermission = fetchedPermission.orElseGet(() -> authoritiesUseCase.savePermission(
-                new CreatePermissionCommand(
-                        "READ-Only Dashboard: The Default permission that determine if a user Super Admin",
-                        null,
-                        "READ",
-                        "SYSTEM"
-                ),
-                author
-        ));
-
-        // Assign the permission to the user
-        authoritiesUseCase.assignedPermissionToRole(
-                defaultPermission.getId(),
-                new AssignRoleCommand(
-                        fetchedUser.getId(),
-                        defaultRole.getId(),
-                        null,
-                        author
-                )
-        );
-
-        return "The super admin was created successfully with default permission: " + defaultPermission.getCode();
+        log.info("Super admin {} created by {}", fetchedUser.getUsername(), author);
+        return "Super admin " + fetchedUser.getUsername() + " created successfully";
     }
 }
