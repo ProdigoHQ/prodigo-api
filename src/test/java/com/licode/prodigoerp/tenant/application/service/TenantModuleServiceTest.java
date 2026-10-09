@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.tenant.application.service;
 
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
+import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 class TenantModuleServiceTest {
 
     @Mock private TenantModuleQueryPort tenantModuleQueryPort;
-    @Mock private RoleQueryPort roleQueryPort;
+    @Mock private PermissionPersistencePort permissionPort;
 
     private TenantModuleService tenantModuleService; // what we want to test
 
@@ -47,7 +47,7 @@ class TenantModuleServiceTest {
     void setUp(){
 
         tenantModuleService = new TenantModuleService(
-                tenantModuleQueryPort, roleQueryPort
+                tenantModuleQueryPort, permissionPort
         );
 
         // add 10 modules in the all modules
@@ -124,7 +124,7 @@ class TenantModuleServiceTest {
         @DisplayName("Happy path Test: find a module details and its permissions")
         void findModuleWithPermissionsByKeyAndTenantId() {
             when(tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey, tenantId)).thenReturn(Optional.of(crmModule));
-            when(roleQueryPort.findPermissionsByModuleKey(moduleKey)).thenReturn(associatedFetchedPermissions);
+            when(permissionPort.findPermissionsByModuleKey(moduleKey)).thenReturn(associatedFetchedPermissions);
 
             ModuleSummaryCommand  actual = tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(moduleKey, tenantId);
 

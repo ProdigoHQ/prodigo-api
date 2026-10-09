@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.tenant.application.service;
 
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
+import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 class TenantModuleServiceIntegrationTest {
 
-    @Mock private RoleQueryPort roleQueryPort;
+    @Mock private PermissionPersistencePort permissionPort;
 
     @Autowired
     private TenantModuleQueryPort tenantModuleQueryPort;
@@ -45,7 +45,7 @@ class TenantModuleServiceIntegrationTest {
     void setUp() {
         tenantModuleService = new TenantModuleService(
                 tenantModuleQueryPort,
-                roleQueryPort
+                permissionPort
         );
 
         crmModule.setId(crmModuleId);
@@ -61,7 +61,7 @@ class TenantModuleServiceIntegrationTest {
     @Test
     void findModuleByModuleKeyAndTenantId() {
         Optional<Module> fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(crmModule.getModuleKey(), tenantId);
-        when(roleQueryPort.findPermissionsByModuleKey(crmModule.getModuleKey())).thenReturn(associatedFetchedPermissions);
+        when(permissionPort.findPermissionsByModuleKey(crmModule.getModuleKey())).thenReturn(associatedFetchedPermissions);
 
         ModuleSummaryCommand actual = tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(crmModule.getModuleKey(), tenantId);
 
@@ -69,7 +69,7 @@ class TenantModuleServiceIntegrationTest {
         assertEquals(crmModule.getName(), actual.name());
         assertNotNull(fetchedModule);
         assertEquals(crmModule.getModuleKey(), fetchedModule.get().getModuleKey());
-        verify(roleQueryPort).findPermissionsByModuleKey(crmModule.getModuleKey());
+        verify(permissionPort).findPermissionsByModuleKey(crmModule.getModuleKey());
     }
 
     @Test

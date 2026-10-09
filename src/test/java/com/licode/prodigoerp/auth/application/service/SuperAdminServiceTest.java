@@ -1,14 +1,11 @@
 package com.licode.prodigoerp.auth.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
-import com.licode.prodigoerp.auth.application.port.input.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
+import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
-import com.licode.prodigoerp.auth.domain.model.Permission;
-import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.ConflictException;
+import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,38 +25,27 @@ import static org.mockito.Mockito.*;
 class SuperAdminServiceTest {
 
     @Mock private LoadUserPort loadUserPort;
-    @Mock private SaveUserUseCase saveUserUseCase;
-    @Mock private RoleQueryPort roleQueryPort;
-    @Mock private AuthoritiesUseCase authoritiesUseCase;
+    @Mock private AccessProvisioningService provisioningService;
+    @Mock private CurrentUserPort currentUser;
+    @Mock private SaveUserUseCase saveUser;
 
     private SuperAdminService superAdminService;
 
     private RegisterSuperAdminCommand registerSuperAdminInfos;
     private User sampleUser;
-    private Role sampleRole;
-    private Permission samplePermission;
     private CreateUserCommand sampleCreateUserInfo;
-    private CreateRoleCommand sampleCreateRole;
-    private AssignRoleCommand sampleAssignRole;
-    private CreatePermissionCommand sampleCreatePermission;
 
     private static final UUID userId = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID roleId = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID permissionId = UUID.fromString("11111111-1111-1111-1111-111111111111");
-
-
     private static final String author = "PRODIGO_ERP_API";
-    private static final String defaultRoleName = "SUPER_ADMIN";
-    private static final String defaultPermissionCode = "ERP.SYSTEM.READ";
 
 
     @BeforeEach
     void setUp() {
         superAdminService = new SuperAdminService(
                 loadUserPort,
-                saveUserUseCase,
-                roleQueryPort,
-                authoritiesUseCase
+                saveUser,
+                provisioningService,
+                currentUser
         );
 
         registerSuperAdminInfos = new RegisterSuperAdminCommand(
@@ -73,12 +59,6 @@ class SuperAdminServiceTest {
         sampleUser = new User();
         sampleUser.setId(userId);
 
-        sampleRole = new Role();
-        sampleRole.setId(roleId);
-
-        samplePermission = new Permission();
-        samplePermission.setId(permissionId);
-
         sampleCreateUserInfo = new CreateUserCommand(
                 registerSuperAdminInfos.username(),
                 null,
@@ -87,28 +67,6 @@ class SuperAdminServiceTest {
                 registerSuperAdminInfos.firstName(),
                 registerSuperAdminInfos.lastName(),
                 true
-        );
-
-        sampleCreateRole = new CreateRoleCommand(
-                defaultRoleName,
-                null,
-                "SUPER_ADMIN : The Default role to access the ERP System Dashboard",
-                true,
-                author
-        );
-
-        sampleAssignRole = new AssignRoleCommand(
-                sampleUser.getId(),
-                sampleRole.getId(),
-                null,
-                author
-        );
-
-        sampleCreatePermission = new CreatePermissionCommand(
-                "READ-Only Dashboard: The Default permission that determine if a user Super Admin",
-                null,
-                "READ",
-                "SYSTEM"
         );
     }
 
@@ -120,26 +78,16 @@ class SuperAdminServiceTest {
         void shouldSuccessfullyRegisterSuperAdminPath1() {
             when(loadUserPort.findUserByUsername(registerSuperAdminInfos.username())).thenReturn(Optional.empty());
             when(loadUserPort.findUserByEmail(registerSuperAdminInfos.email())).thenReturn(Optional.empty());
-            when(saveUserUseCase.save(sampleCreateUserInfo, author)).thenReturn(sampleUser);
-            when(roleQueryPort.findRoleByNameWithTenantNull(defaultRoleName)).thenReturn(Optional.of(sampleRole));
-//            when(saveAuthoritiesUseCase.saveRole(sampleCreateRole)).thenReturn(sampleRole);
-            when(roleQueryPort.findPermissionByCode(defaultPermissionCode)).thenReturn(Optional.of(samplePermission));
-//            when(saveAuthoritiesUseCase.savePermission(sampleCreatePermission, author)).thenReturn(samplePermission);
+            when(currentUser.usernameOrSystem()).thenReturn(author);
+            when(saveUser.save(sampleCreateUserInfo, author)).thenReturn(sampleUser);
+            when(provisioningService.ensureSuperAdminRole(author)).thenReturn(UUID.fromString("11111111-1111-1111-1111-111111111111"));
+
 
             String actual =  superAdminService.register(registerSuperAdminInfos);
-
-//            saveAuthoritiesUseCase.assignedRoleToUser(sampleAssignRole);
-//            saveAuthoritiesUseCase.assignedPermissionToRole(samplePermission.getId(),sampleAssignRole);
 
 
             verify(loadUserPort).findUserByUsername(registerSuperAdminInfos.username());
             verify(loadUserPort).findUserByEmail(registerSuperAdminInfos.email());
-            verify(saveUserUseCase).save(sampleCreateUserInfo, author);
-            verify(roleQueryPort).findRoleByNameWithTenantNull(defaultRoleName);
-            verify(authoritiesUseCase, times(0)).saveRole(sampleCreateRole);
-            verify(authoritiesUseCase).assignedRoleToUser(sampleAssignRole);
-            verify(roleQueryPort).findPermissionByCode(defaultPermissionCode);
-            verify(authoritiesUseCase, times(0)).savePermission(sampleCreatePermission, author);
             assertNotNull(actual);
             assertNotNull(loadUserPort.findUserByUsername(registerSuperAdminInfos.username()));
 
@@ -150,27 +98,18 @@ class SuperAdminServiceTest {
         void shouldSuccessfullyRegisterSuperAdminPath2() {
             when(loadUserPort.findUserByUsername(registerSuperAdminInfos.username())).thenReturn(Optional.empty());
             when(loadUserPort.findUserByEmail(registerSuperAdminInfos.email())).thenReturn(Optional.empty());
-            when(saveUserUseCase.save(sampleCreateUserInfo, author)).thenReturn(sampleUser);
-            when(roleQueryPort.findRoleByNameWithTenantNull(defaultRoleName)).thenReturn(Optional.empty());
-            when(authoritiesUseCase.saveRole(sampleCreateRole)).thenReturn(sampleRole);
-            when(roleQueryPort.findPermissionByCode(defaultPermissionCode)).thenReturn(Optional.empty());
-            when(authoritiesUseCase.savePermission(sampleCreatePermission, author)).thenReturn(samplePermission);
+            when(currentUser.usernameOrSystem()).thenReturn(author);
+            when(saveUser.save(sampleCreateUserInfo, author)).thenReturn(sampleUser);
+            when(provisioningService.ensureSuperAdminRole(author)).thenReturn(UUID.fromString("11111111-1111-1111-1111-111111111111"));
+
 
             String actual =  superAdminService.register(registerSuperAdminInfos);
 
-//            saveAuthoritiesUseCase.assignedRoleToUser(sampleAssignRole);
-//            saveAuthoritiesUseCase.assignedPermissionToRole(samplePermission.getId(),sampleAssignRole);
-
             verify(loadUserPort).findUserByUsername(registerSuperAdminInfos.username());
             verify(loadUserPort).findUserByEmail(registerSuperAdminInfos.email());
-            verify(saveUserUseCase).save(sampleCreateUserInfo, author);
-            verify(roleQueryPort).findRoleByNameWithTenantNull(defaultRoleName);
-            verify(authoritiesUseCase).saveRole(sampleCreateRole);
-            verify(authoritiesUseCase).assignedRoleToUser(sampleAssignRole);
-            verify(roleQueryPort).findPermissionByCode(defaultPermissionCode);
-            verify(authoritiesUseCase).savePermission(sampleCreatePermission, author);
+            verify(saveUser).save(sampleCreateUserInfo, author);
             assertNotNull(actual);
-            assertNull(saveUserUseCase.save(sampleCreateUserInfo, author).getTenant());
+            assertNull(saveUser.save(sampleCreateUserInfo, author).getTenant());
             assertNotNull(loadUserPort.findUserByUsername(registerSuperAdminInfos.username()));
 
         }
@@ -183,7 +122,7 @@ class SuperAdminServiceTest {
             ConflictException ex = assertThrows(ConflictException.class,
                     () -> superAdminService.register(registerSuperAdminInfos));
 
-            assertEquals("Username already exists", ex.getMessage());
+            assertEquals("Username already exists, please create another username", ex.getMessage());
             assertNotNull(loadUserPort.findUserByUsername(registerSuperAdminInfos.username()));
         }
 
@@ -195,7 +134,7 @@ class SuperAdminServiceTest {
             ConflictException ex = assertThrows(ConflictException.class,
                     () -> superAdminService.register(registerSuperAdminInfos));
 
-            assertEquals("Email already exists", ex.getMessage());
+            assertEquals("Email already exists,  please try another email", ex.getMessage());
         }
 
     }

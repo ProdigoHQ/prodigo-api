@@ -2,7 +2,6 @@ package com.licode.prodigoerp.tenant.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
-import com.licode.prodigoerp.auth.application.port.output.RoleQueryPort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
