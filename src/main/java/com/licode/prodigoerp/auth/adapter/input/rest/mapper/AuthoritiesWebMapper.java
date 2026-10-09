@@ -1,20 +1,20 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.mapper;
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.CreatePermissionDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.RoleSummaryDto;
-import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.RoleSummaryCommand;
-import com.licode.prodigoerp.auth.domain.model.Permission;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.*;
+import com.licode.prodigoerp.auth.application.port.input.command.*;
 import org.mapstruct.Mapper;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface AuthoritiesWebMapper {
 
-    PermissionSummaryDto toPermissionSummaryDto(PermissionSummaryCommand permissionSummaryCommand);
-    PermissionSummaryDto toPermissionSummaryDto(Permission permission);
     CreatePermissionCommand toCreatePermissionCommand(CreatePermissionDto createPermissionDto);
+    UpdatePermissionCommand toUpdatePermissionCommand(UpdatePermissionDto updatePermissionDto);
+    SaveRoleCommand toSaveRoleCommand(SaveRoleDto saveRoleDto);
 
+    PermissionSummaryDto toPermissionSummaryDto(PermissionSummaryCommand permissionSummaryCommand);
+    List<PermissionSummaryDto> toPermissionSummaryDtos(List<PermissionSummaryCommand> permissionSummaryCommands);
     RoleSummaryDto toRoleSummaryDto(RoleSummaryCommand roleSummaryCommand);
+    List<RoleSummaryDto> toRoleSummaryDtos(List<RoleSummaryCommand> roleSummaryCommands);
 }

@@ -1,4 +1,4 @@
-package com.licode.prodigoerp.auth.adapter.input.rest.controller;
+package com.licode.prodigoerp.auth.adapter.input.rest.controller.tenant;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.AuthResponseDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.RegisterRequestDto;

@@ -1,4 +1,4 @@
-package com.licode.prodigoerp.auth.adapter.input.rest.controller;
+package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.CreatePermissionDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
