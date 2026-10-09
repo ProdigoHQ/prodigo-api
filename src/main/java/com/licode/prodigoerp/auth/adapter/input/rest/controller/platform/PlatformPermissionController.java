@@ -2,54 +2,57 @@ package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.CreatePermissionDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.UpdatePermissionDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
-import com.licode.prodigoerp.auth.application.port.input.AuthoritiesUseCase;
+import com.licode.prodigoerp.auth.application.port.input.PermissionCatalogUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
-import com.licode.prodigoerp.auth.domain.model.Permission;
-import com.licode.prodigoerp.common.security.SecurityUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/s/admin/permissions")
+@PreAuthorize("hasRole('SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class PlatformPermissionController {
 
-    private final AuthoritiesWebMapper authoritiesWebMapper;
-    private final AuthoritiesUseCase authoritiesUseCase;
+    private final AuthoritiesWebMapper mapper;
+    private final PermissionCatalogUseCase useCase;
 
-
-    @GetMapping(value = "/{permissionId}", version = "1.0")
-    public ResponseEntity<PermissionSummaryDto> getPermissions(@PathVariable UUID permissionId) {
-
-        PermissionSummaryCommand permissionDetails = authoritiesUseCase.fetchPermissionSummary(permissionId);
-
-        return ResponseEntity.ok(authoritiesWebMapper.toPermissionSummaryDto(permissionDetails));
+    @GetMapping(version = "1.0")
+    public ResponseEntity<List<PermissionSummaryDto>> list(){
+        return ResponseEntity.ok(mapper.toPermissionSummaryDtos(useCase.listPermissions()));
     }
 
-    @PostMapping(value = "/", version = "1.0")
-    public ResponseEntity<PermissionSummaryDto> createPermission(@RequestBody CreatePermissionDto createPermissionDto) {
+    @GetMapping(value = "/{permissionId}", version = "1.0")
+    public ResponseEntity<PermissionSummaryDto> get(@PathVariable UUID permissionId){
+        return ResponseEntity.ok(mapper.toPermissionSummaryDto(useCase.getPermissionById(permissionId)));
+    }
 
-        String currentUserLogin = SecurityUtils.getCurrentUser().username();
+    @PostMapping(version = "1.0")
+    public ResponseEntity<PermissionSummaryDto> create(@Valid @RequestBody CreatePermissionDto dto){
+        PermissionSummaryCommand created = useCase.create(mapper.toCreatePermissionCommand(dto));
 
-        Permission createdPermission = authoritiesUseCase.savePermission(
-                authoritiesWebMapper.toCreatePermissionCommand(createPermissionDto),
-                currentUserLogin);
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toPermissionSummaryDto(created));
+    }
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authoritiesWebMapper.toPermissionSummaryDto(createdPermission));
+    @PutMapping(value = "/{permissionId}", version = "1.0")
+    public ResponseEntity<PermissionSummaryDto> update(@PathVariable UUID permissionId, @Valid @RequestBody UpdatePermissionDto dto){
+        return ResponseEntity.ok().body(
+                mapper.toPermissionSummaryDto(useCase.update(permissionId, mapper.toUpdatePermissionCommand(dto)))
+        );
     }
 
     @DeleteMapping(value = "/{permissionId}", version = "1.0")
-    public ResponseEntity<Void> deletePermission(@PathVariable UUID permissionId) {
-        // TODO: two paths to verify : soft delete and also check for system permissions that should never be deleted
+    public ResponseEntity<Void> delete(@PathVariable UUID permissionId){
+        useCase.delete(permissionId);
 
-        authoritiesUseCase.deletePermission(permissionId);
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
