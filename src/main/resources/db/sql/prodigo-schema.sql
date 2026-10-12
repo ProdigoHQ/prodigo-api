@@ -139,7 +139,8 @@ CREATE TABLE IF NOT EXISTS "permissions" (
     "description" TEXT,
     "action" VARCHAR(50) NOT NULL,
     "resource" VARCHAR(100) NOT NULL,
-    "module_id" UUID NOT NULL,
+    "module_id" UUID,
+    "tenant_assignable" BOOLEAN NOT NULL DEFAULT FALSE,
     "created_at" TIMESTAMP NOT NULL default current_timestamp,
     "updated_at" TIMESTAMP NOT NULL,
     "created_by" VARCHAR(100) NOT NULL,
@@ -151,10 +152,6 @@ ALTER TABLE "permissions"
     ADD CONSTRAINT fk_permission_module
         FOREIGN KEY("module_id") REFERENCES "modules"("id")
             ON DELETE CASCADE;
-
-ALTER TABLE permissions ADD COLUMN tenant_assignable BOOLEAN NOT NULL DEFAULT FALSE;
-UPDATE permissions SET tenant_assignable = TRUE WHERE module_id IS NOT NULL;  -- ERP.* stays false
-CREATE INDEX idx_role_permission_permission_id ON role_permissions (permission_id);
 
 CREATE TABLE IF NOT EXISTS "role_permissions" (
     "id" UUID PRIMARY KEY NOT NULL,
@@ -175,6 +172,8 @@ ALTER TABLE "role_permissions"
         FOREIGN KEY("permission_id") REFERENCES "permissions"("id")
             ON DELETE CASCADE;
 
+CREATE INDEX idx_role_permission_permission_id ON role_permissions (permission_id);
+
 CREATE TABLE IF NOT EXISTS "refresh_tokens" (
     "id" UUID PRIMARY KEY NOT NULL,
     "token" TEXT NOT NULL,
@@ -188,3 +187,41 @@ ALTER TABLE "refresh_tokens"
     ADD CONSTRAINT fk_refreshtoken_user
         FOREIGN KEY("user_id") REFERENCES "users"("id")
             ON DELETE CASCADE;
+
+-- Indexes for repository filters, joins, and foreign-key delete checks.
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id
+    ON "users" ("tenant_id");
+
+CREATE INDEX IF NOT EXISTS idx_roles_tenant_name
+    ON "roles" ("tenant_id", "name");
+
+CREATE INDEX IF NOT EXISTS idx_roles_tenant_lower_name
+    ON "roles" ("tenant_id", LOWER("name"));
+
+CREATE INDEX IF NOT EXISTS idx_user_roles_role_id
+    ON "user_roles" ("role_id");
+
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_expires_at
+    ON "user_roles" ("user_id", "expires_at");
+
+CREATE INDEX IF NOT EXISTS idx_permissions_module_id
+    ON "permissions" ("module_id");
+
+CREATE INDEX IF NOT EXISTS idx_permissions_tenant_assignable_code
+    ON "permissions" ("tenant_assignable", "code");
+
+CREATE INDEX IF NOT EXISTS idx_modules_active
+    ON "modules" ("id")
+    WHERE "is_active" = true;
+
+CREATE INDEX IF NOT EXISTS idx_module_subscriptions_module_id
+    ON "module_subscriptions" ("module_id");
+
+CREATE INDEX IF NOT EXISTS idx_module_subscriptions_tenant_status
+    ON "module_subscriptions" ("tenant_id", "status");
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token
+    ON "refresh_tokens" ("token");
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
+    ON "refresh_tokens" ("user_id");
