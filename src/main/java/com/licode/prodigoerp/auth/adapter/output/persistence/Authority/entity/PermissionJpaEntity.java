@@ -47,7 +47,7 @@ public class PermissionJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "module_id")
+    @JoinColumn(name = "module_id", nullable = true)
     private ModuleJpaEntity moduleJpaEntity;
 
     @Column(name = "tenant_assignable", nullable = false)

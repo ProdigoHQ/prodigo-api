@@ -66,6 +66,33 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
 
     @Override
     public UUID createTenantAdminRole(UUID tenantId, Collection<String> moduleKeys, String author) {
+        return createTenantFullAccessRole(tenantId, moduleKeys, TENANT_ADMIN_ROLE, author);
+    }
+
+    @Override
+    public UUID createTenantOwnerRole(UUID tenantId, Collection<String> moduleKeys, String author) {
+        return createTenantFullAccessRole(tenantId, moduleKeys, "OWNER", author);
+    }
+
+    @Override
+    public UUID createTenantMemberRole(UUID tenantId, String author) {
+        Tenant tenant = tenantLookUp.findTenantById(tenantId);
+        Role role = rolePort.save(newRole(
+                "MEMBER",
+                tenant,
+                "MEMBER: standard tenant user",
+                author
+        ));
+        log.info("Member role {} created for tenant {}", role.getId(), tenantId);
+        return role.getId();
+    }
+
+    private UUID createTenantFullAccessRole(
+            UUID tenantId,
+            Collection<String> moduleKeys,
+            String roleName,
+            String author
+    ) {
 
         Set<String> codes = moduleKeys.stream()
                 .map(k -> (k + ".MODULE.CRUD").toUpperCase())
@@ -79,9 +106,9 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
         Tenant tenant = tenantLookUp.findTenantById(tenantId);
 
         Role role = rolePort.save(newRole(
-                TENANT_ADMIN_ROLE,
+                roleName,
                 tenant,
-                "ADMIN: full access to the tenant (company)",
+                roleName + ": full access to the tenant (company)",
                 author
         ));
 

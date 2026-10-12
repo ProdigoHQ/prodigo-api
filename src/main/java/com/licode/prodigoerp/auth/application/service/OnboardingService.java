@@ -99,10 +99,11 @@ public class OnboardingService implements RegisterUserUseCase {
         );
 
 
-        // here is the Admin role ( for the company (tenant) creating the account)
-        // TODO: Also need an OWNER role along side with the ADMIN role (TO BE IMPLEMENTED)
-        UUID adminRoleId = provisioning.createTenantAdminRole(createdTenant.getId(), subscriptions.keySet(), author);
-        provisioning.assignRoleToUser(fetchedUser.getId(), adminRoleId, createdTenant.getId(), author);
+        // Create the standard tenant roles. The registering user owns the tenant.
+        UUID ownerRoleId = provisioning.createTenantOwnerRole(createdTenant.getId(), subscriptions.keySet(), author);
+        provisioning.createTenantAdminRole(createdTenant.getId(), subscriptions.keySet(), author);
+        provisioning.createTenantMemberRole(createdTenant.getId(), author);
+        provisioning.assignRoleToUser(fetchedUser.getId(), ownerRoleId, createdTenant.getId(), author);
 
         // Generating the access and refresh token
         RefreshToken refreshToken = refreshTokenStorePort.createRefreshToken(fetchedUser);

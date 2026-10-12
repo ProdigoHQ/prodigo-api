@@ -14,6 +14,12 @@ public interface AccessProvisioningUseCase {
     // Creates the ADMIN role for a new tenant with KEY.MODULE.CRUD for each subscribed module.
     UUID createTenantAdminRole(UUID tenantId, Collection<String> moduleKeys, String author);
 
+    // Creates the OWNER role for a new tenant with KEY.MODULE.CRUD for each subscribed module.
+    UUID createTenantOwnerRole(UUID tenantId, Collection<String> moduleKeys, String author);
+
+    // Creates the default member role for a new tenant.
+    UUID createTenantMemberRole(UUID tenantId, String author);
+
     void assignRoleToUser(UUID userID, UUID roleId, UUID tenantId, String author);
 
     // creates the permission if missing, returns its code. NOTE: will be used by seeders

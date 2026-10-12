@@ -68,6 +68,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
         p.setAction(cmd.action().toUpperCase());
         p.setResource(cmd.resource().toUpperCase());
         p.setModule(module);
+        p.setTenantAssignable(module != null);
         p.setCreatedAt(now);
         p.setUpdatedAt(now);
         p.setCreatedBy(author);
