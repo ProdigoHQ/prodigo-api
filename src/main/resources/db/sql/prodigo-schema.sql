@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE IF NOT EXISTS "tenants" (
     "id" UUID NOT NULL PRIMARY KEY UNIQUE,
     "name" VARCHAR(255) NOT NULL,
@@ -225,3 +227,9 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token
 
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
     ON "refresh_tokens" ("user_id");
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_roles_system_name
+    ON roles (name) WHERE tenant_id IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_roles_tenant_name
+    ON roles (tenant_id, name) WHERE tenant_id IS NOT NULL;
