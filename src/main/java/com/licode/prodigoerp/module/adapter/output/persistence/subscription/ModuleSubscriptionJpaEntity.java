@@ -65,8 +65,7 @@ public class ModuleSubscriptionJpaEntity {
     @Column(name = "activated_at", nullable = false)
     private Instant activatedAt;
 
-    @NotNull
-    @Column(name = "expires_at", nullable = false)
+    @Column(name = "expires_at")
     private Instant expiresAt;
 
     @NotNull

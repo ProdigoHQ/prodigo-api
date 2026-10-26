@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS "module_subscriptions" (
     "price" DECIMAL(10,2) NOT NULL DEFAULT 0,
     "currency" VARCHAR(3) NOT NULL DEFAULT 'XAF',
     "activated_at" TIMESTAMP NOT NULL,
-    "expires_at" TIMESTAMP NOT NULL,
+    "expires_at" TIMESTAMP,
     "created_at" TIMESTAMP NOT NULL default current_timestamp,
     "updated_at" TIMESTAMP NOT NULL,
     "created_by" VARCHAR(100) NOT NULL,
