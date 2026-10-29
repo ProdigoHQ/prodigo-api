@@ -25,7 +25,7 @@ public class SuperAdminController {
     private final RegisterSuperAdminUseCase registerSuperAdminUseCase;
     private final AuthWebMapper authWebMapper;
 
-    @PreAuthorize("hasAnyAuthority('ERP.ADMIN.UPDATE', 'ERP.ADMIN.CREATE')")
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.CREATE')")
     @PostMapping(value = "/create", version = "1.0")
     public ResponseEntity<String> createSuperAdmin(@Valid @RequestBody CreateSuperAdminDto createSuperAdminDto) {
         return ResponseEntity.ok().body(

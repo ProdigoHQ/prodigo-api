@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/s/admin/permissions")
-@PreAuthorize("hasAuthority('ERP.PERMISSION.READ')")
+@PreAuthorize("hasAuthority('PERM_ERP.PERMISSION.READ')")
 @RequiredArgsConstructor
 public class PlatformPermissionController {
 
@@ -35,7 +35,7 @@ public class PlatformPermissionController {
         return ResponseEntity.ok(mapper.toPermissionSummaryDto(useCase.getPermissionById(permissionId)));
     }
 
-    @PreAuthorize("hasAnyAuthority('ERP.PERMISSION.CREATE','ERP.PERMISSION.UPDATE')")
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.CREATE','PERM_ERP.PERMISSION.UPDATE')")
     @PostMapping(version = "1.0")
     public ResponseEntity<PermissionSummaryDto> create(@Valid @RequestBody CreatePermissionDto dto){
         PermissionSummaryCommand created = useCase.create(mapper.toCreatePermissionCommand(dto));
@@ -43,7 +43,7 @@ public class PlatformPermissionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toPermissionSummaryDto(created));
     }
 
-    @PreAuthorize("hasAnyAuthority('ERP.PERMISSION.CREATE','ERP.PERMISSION.UPDATE')")
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.CREATE','PERM_ERP.PERMISSION.UPDATE')")
     @PutMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<PermissionSummaryDto> update(@PathVariable UUID permissionId, @Valid @RequestBody UpdatePermissionDto dto){
         return ResponseEntity.ok().body(
@@ -51,7 +51,7 @@ public class PlatformPermissionController {
         );
     }
 
-    @PreAuthorize("hasAuthority('ERP.PERMISSION.DELETE')")
+    @PreAuthorize("hasAuthority('PERM_ERP.PERMISSION.DELETE')")
     @DeleteMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> delete(@PathVariable UUID permissionId){
         useCase.delete(permissionId);

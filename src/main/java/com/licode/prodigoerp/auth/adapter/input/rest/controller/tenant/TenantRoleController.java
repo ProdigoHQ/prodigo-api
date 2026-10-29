@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/roles")
-@PreAuthorize("hasAuthority('TENANT.ROLE.READ')")
+@PreAuthorize("hasAuthority('PERM_TENANT.ROLE.READ')")
 @RequiredArgsConstructor
 public class TenantRoleController {
 
@@ -36,7 +36,7 @@ public class TenantRoleController {
         return ResponseEntity.ok().body(mapper.toRoleSummaryDto(useCase.get(roleId)));
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.CREATE', 'TENANT.ROLE.UPDATE')")
+    @PreAuthorize("hasAnyAuthority('PERM_TENANT.ROLE.CREATE', 'PERM_TENANT.ROLE.UPDATE')")
     @PostMapping(version = "1.0")
     public ResponseEntity<RoleSummaryDto> create(@Valid @RequestBody SaveRoleDto dto){
         RoleSummaryCommand created = useCase.create(mapper.toSaveRoleCommand(dto));
@@ -44,7 +44,7 @@ public class TenantRoleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toRoleSummaryDto(created));
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.CREATE', 'TENANT.ROLE.UPDATE')")
+    @PreAuthorize("hasAnyAuthority('PERM_TENANT.ROLE.CREATE', 'PERM_TENANT.ROLE.UPDATE')")
     @PutMapping(value = "/{roleId}", version = "1.0")
     public ResponseEntity<RoleSummaryDto> update(@PathVariable UUID roleId, @Valid @RequestBody SaveRoleDto dto){
         RoleSummaryCommand updated = useCase.update(roleId, mapper.toSaveRoleCommand(dto));
@@ -52,7 +52,7 @@ public class TenantRoleController {
         return ResponseEntity.ok().body(mapper.toRoleSummaryDto(updated));
     }
 
-    @PreAuthorize("hasAuthority('TENANT.ROLE.DELETE')")
+    @PreAuthorize("hasAuthority('PERM_TENANT.ROLE.DELETE')")
     @DeleteMapping(value = "/{roleId}", version = "1.0")
     public ResponseEntity<Void> delete(@PathVariable UUID roleId) {
         useCase.delete(roleId);

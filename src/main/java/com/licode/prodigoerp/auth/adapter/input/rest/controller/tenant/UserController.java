@@ -20,14 +20,12 @@ import java.time.Duration;
 
 @RestController
 @RequestMapping(path = "/api/{version}/auth")
-@PreAuthorize("hasAuthority('TENANT.USER.READ')")
 @RequiredArgsConstructor
 public class UserController {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final AuthWebMapper authWebMapper;
 
-    @PreAuthorize("hasAnyAuthority('TENANT.USER.CREATE', 'TENANT.USER.UPDATE')")
     @PostMapping(value = "/register", version = "1.0")
     public ResponseEntity<AuthResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequestDto) {
 

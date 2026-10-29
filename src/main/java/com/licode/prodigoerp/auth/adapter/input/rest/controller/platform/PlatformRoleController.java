@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/s/admin")
-@PreAuthorize("hasRole('ERP.ROLE.READ')")
+@PreAuthorize("hasRole('PERM_ERP.ROLE.READ')")
 @RequiredArgsConstructor
 public class PlatformRoleController {
 
@@ -37,7 +37,7 @@ public class PlatformRoleController {
         return ResponseEntity.ok().body(mapper.toRoleSummaryDto(useCase.get(roleId)));
     }
 
-    @PreAuthorize("hasAnyAuthority('ERP.ROLE.CREATE','ERP.ROLE.UPDATE')")
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.ROLE.CREATE','PERM_ERP.ROLE.UPDATE')")
     @PostMapping(value = "/roles", version = "1.0")
     public ResponseEntity<RoleSummaryDto> create(@Valid @RequestBody SaveRoleDto dto){
         RoleSummaryCommand created = useCase.create(mapper.toSaveRoleCommand(dto));
@@ -45,14 +45,14 @@ public class PlatformRoleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toRoleSummaryDto(created));
     }
 
-    @PreAuthorize("hasAnyAuthority('ERP.ROLE.CREATE','ERP.ROLE.UPDATE')")
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.ROLE.CREATE','PERM_ERP.ROLE.UPDATE')")
     @PutMapping(value = "/roles/{roleId}", version = "1.0")
     public ResponseEntity<RoleSummaryDto> update(@PathVariable UUID roleId, @Valid @RequestBody SaveRoleDto dto){
 
         return ResponseEntity.ok().body(mapper.toRoleSummaryDto(useCase.update(roleId, mapper.toSaveRoleCommand(dto))));
     }
 
-    @PreAuthorize("hasAuthority('ERP.ROLE.DELETE')")
+    @PreAuthorize("hasAuthority('PERM_ERP.ROLE.DELETE')")
     @DeleteMapping(value = "/roles/{roleId}", version = "1.0")
     public ResponseEntity<Void> delete(@PathVariable UUID roleId){
         useCase.delete(roleId);
@@ -61,13 +61,13 @@ public class PlatformRoleController {
     }
 
     // read-only : superadmin can inspect tenant's roles
-    @PreAuthorize("hasAuthority('ERP.USER.READ')")
+    @PreAuthorize("hasAuthority('PERM_ERP.USER.READ')")
     @GetMapping(value = "/tenants/{tenantId}/roles", version = "1.0")
     public ResponseEntity<List<RoleSummaryDto>> listTenantRoles(@PathVariable UUID tenantId){
         return ResponseEntity.ok().body(mapper.toRoleSummaryDtos(useCase.listTenantRoles(tenantId)));
     }
 
-    @PreAuthorize("hasAuthority('ERP.USER.READ')")
+    @PreAuthorize("hasAuthority('PERM_ERP.USER.READ')")
     @GetMapping(value = "/tenants/{tenantId}/roles/{roleId}", version = "1.0")
     public ResponseEntity<RoleSummaryDto> get(@PathVariable UUID tenantId, @PathVariable UUID roleId){
 

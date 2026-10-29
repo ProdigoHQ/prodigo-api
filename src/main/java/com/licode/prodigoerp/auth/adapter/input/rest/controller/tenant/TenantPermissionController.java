@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/permissions")
-@PreAuthorize("hasAuthority('TENANT.PERMISSION.READ')")
+@PreAuthorize("hasAuthority('PERM_TENANT.PERMISSION.READ')")
 @RequiredArgsConstructor
 public class TenantPermissionController {
 

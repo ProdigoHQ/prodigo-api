@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/roles/{rolesId}/permissions")
-@PreAuthorize("hasAuthority('TENANT.ROLE.READ_ASSIGNMENTS')")
+@PreAuthorize("hasAuthority('PERM_TENANT.ROLE.READ_ASSIGNMENTS')")
 @RequiredArgsConstructor
 public class TenantRolePermissionController {
 
@@ -27,7 +27,7 @@ public class TenantRolePermissionController {
         return ResponseEntity.ok().body(mapper.toPermissionSummaryDtos(useCase.list(roleId)));
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.ASSIGN', 'TENANT.ROLE.REVOKE')")
+    @PreAuthorize("hasAnyAuthority('PERM_TENANT.ROLE.ASSIGN', 'PERM_TENANT.ROLE.REVOKE')")
     @PostMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> assign(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
         useCase.assign(roleId, permissionId);
@@ -35,7 +35,7 @@ public class TenantRolePermissionController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.ASSIGN', 'TENANT.ROLE.REVOKE')")
+    @PreAuthorize("hasAnyAuthority('PERM_TENANT.ROLE.ASSIGN', 'PERM_TENANT.ROLE.REVOKE')")
     @DeleteMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> remove(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
         useCase.remove(roleId, permissionId);
