@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 // Example: to check for permissions -> hasAuthority("PERM_permissionCode") must start with "PERM_"
 // Note you can also verify hasAuthorities("ROLE_SUPER_ADMIN", "ERP.ADMIN.CREATE")
 @RestController
-@PreAuthorize("hasRole('SUPER_ADMIN')")
 @RequestMapping("/api/{version}/s/admin")
 @RequiredArgsConstructor
 public class SuperAdminController {
@@ -26,7 +25,7 @@ public class SuperAdminController {
     private final RegisterSuperAdminUseCase registerSuperAdminUseCase;
     private final AuthWebMapper authWebMapper;
 
-    @PreAuthorize("hasAuthority('ERP.ADMIN.CREATE')")
+    @PreAuthorize("hasAnyAuthority('ERP.ADMIN.UPDATE', 'ERP.ADMIN.CREATE')")
     @PostMapping(value = "/create", version = "1.0")
     public ResponseEntity<String> createSuperAdmin(@Valid @RequestBody CreateSuperAdminDto createSuperAdminDto) {
         return ResponseEntity.ok().body(

@@ -6,6 +6,7 @@ import com.licode.prodigoerp.auth.application.port.input.SystemRolePermissionUse
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,11 +20,13 @@ public class PlatformRolePermissionController {
     private final SystemRolePermissionUseCase useCase;
     private final AuthoritiesWebMapper mapper;
 
+    @PreAuthorize("hasAuthority('ERP.ADMIN.READ')")
     @GetMapping(version = "1.0")
     public ResponseEntity<List<PermissionSummaryDto>> list(@PathVariable UUID roleId) {
         return ResponseEntity.ok().body(mapper.toPermissionSummaryDtos(useCase.list(roleId)));
     }
 
+    @PreAuthorize("hasAnyAuthority('ERP.ADMIN.CREATE', 'ERP.ADMIN.UPDATE', 'ERP.ADMIN.DELETE')")
     @PostMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> assign(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
 
@@ -32,6 +35,7 @@ public class PlatformRolePermissionController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PreAuthorize("hasAnyAuthority('ERP.ADMIN.CREATE', 'ERP.ADMIN.UPDATE', 'ERP.ADMIN.DELETE')")
     @DeleteMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> remove(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
         useCase.remove(roleId, permissionId);
