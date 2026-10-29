@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +20,14 @@ import java.time.Duration;
 
 @RestController
 @RequestMapping(path = "/api/{version}/auth")
+@PreAuthorize("hasAuthority('TENANT.USER.READ')")
 @RequiredArgsConstructor
 public class UserController {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final AuthWebMapper authWebMapper;
 
+    @PreAuthorize("hasAnyAuthority('TENANT.USER.CREATE', 'TENANT.USER.UPDATE')")
     @PostMapping(value = "/register", version = "1.0")
     public ResponseEntity<AuthResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequestDto) {
 

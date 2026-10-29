@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,13 +17,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/roles")
+@PreAuthorize("hasAuthority('TENANT.ROLE.READ')")
 @RequiredArgsConstructor
 public class TenantRoleController {
 
     private final TenantRoleUseCase useCase;
     private final AuthoritiesWebMapper mapper;
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.READ')")
     @GetMapping(version = "1.0")
     public ResponseEntity<List<RoleSummaryDto>> list(){
         return ResponseEntity.ok().body(
@@ -30,13 +31,12 @@ public class TenantRoleController {
         );
     }
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.READ')")
     @GetMapping(value = "/{roleId}", version = "1.0")
     public ResponseEntity<RoleSummaryDto> get(@PathVariable UUID roleId) {
         return ResponseEntity.ok().body(mapper.toRoleSummaryDto(useCase.get(roleId)));
     }
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.CREATE')")
+    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.CREATE', 'TENANT.ROLE.UPDATE')")
     @PostMapping(version = "1.0")
     public ResponseEntity<RoleSummaryDto> create(@Valid @RequestBody SaveRoleDto dto){
         RoleSummaryCommand created = useCase.create(mapper.toSaveRoleCommand(dto));
@@ -44,7 +44,7 @@ public class TenantRoleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toRoleSummaryDto(created));
     }
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.UPDATE')")
+    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.CREATE', 'TENANT.ROLE.UPDATE')")
     @PutMapping(value = "/{roleId}", version = "1.0")
     public ResponseEntity<RoleSummaryDto> update(@PathVariable UUID roleId, @Valid @RequestBody SaveRoleDto dto){
         RoleSummaryCommand updated = useCase.update(roleId, mapper.toSaveRoleCommand(dto));
@@ -52,7 +52,7 @@ public class TenantRoleController {
         return ResponseEntity.ok().body(mapper.toRoleSummaryDto(updated));
     }
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.DELETE')")
+    @PreAuthorize("hasAuthority('TENANT.ROLE.DELETE')")
     @DeleteMapping(value = "/{roleId}", version = "1.0")
     public ResponseEntity<Void> delete(@PathVariable UUID roleId) {
         useCase.delete(roleId);

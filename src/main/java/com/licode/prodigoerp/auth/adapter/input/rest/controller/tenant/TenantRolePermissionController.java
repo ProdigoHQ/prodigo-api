@@ -6,6 +6,7 @@ import com.licode.prodigoerp.auth.application.port.input.TenantRolePermissionUse
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,20 +14,20 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/roles/{rolesId}/permissions")
+@PreAuthorize("hasAuthority('TENANT.ROLE.READ_ASSIGNMENTS')")
 @RequiredArgsConstructor
 public class TenantRolePermissionController {
 
     private final TenantRolePermissionUseCase useCase;
     private final AuthoritiesWebMapper mapper;
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.READ')")
     @GetMapping(version = "1.0")
     public ResponseEntity<List<PermissionSummaryDto>> list(@PathVariable UUID roleId) {
 
         return ResponseEntity.ok().body(mapper.toPermissionSummaryDtos(useCase.list(roleId)));
     }
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.ASSIGN_PERMISSION')")
+    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.ASSIGN', 'TENANT.ROLE.REVOKE')")
     @PostMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> assign(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
         useCase.assign(roleId, permissionId);
@@ -34,7 +35,7 @@ public class TenantRolePermissionController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-//    @PreAuthorize("hasAuthority('AUTH.ROLE.ASSIGN_PERMISSION')")
+    @PreAuthorize("hasAnyAuthority('TENANT.ROLE.ASSIGN', 'TENANT.ROLE.REVOKE')")
     @DeleteMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> remove(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
         useCase.remove(roleId, permissionId);
