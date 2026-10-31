@@ -1,10 +1,13 @@
 package com.licode.prodigoerp.auth.application.port.input.command;
 
-public record RegisterSuperAdminCommand(
+import java.util.UUID;
+
+public record RegisterPlatformAdminCommand(
         String username,
         String email,
         String password,
         String firstName,
-        String lastName
+        String lastName,
+        UUID roleId
 ) {
 }

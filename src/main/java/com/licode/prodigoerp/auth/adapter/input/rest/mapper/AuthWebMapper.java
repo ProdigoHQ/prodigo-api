@@ -1,10 +1,7 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.mapper;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.*;
-import com.licode.prodigoerp.auth.application.port.input.command.AuthResponseCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.RefreshResponseCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.RegisterSuperAdminCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.RegisterUserCommand;
+import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.module.application.port.input.command.SelectedModuleCommand;
 import org.mapstruct.Mapper;
 
@@ -17,5 +14,5 @@ public interface AuthWebMapper {
     RefreshResponseDto toRefreshResponseDto(RefreshResponseCommand refreshResponseCommand);
     SelectedModuleCommand toSelectedModuleCommand(RegisterSelectedModuleDto registerSelectedModuleDto);
     RegisterSelectedModuleDto toRegisterSelectedModuleDto(SelectedModuleCommand selectedModuleCommand);
-    RegisterSuperAdminCommand toRegisterSuperAdminCommand(CreateSuperAdminDto createSuperAdminDto);
+    RegisterPlatformAdminCommand toRegisterSuperAdminCommand(CreatePlatformAdminDto createSuperAdminDto);
 }

@@ -20,7 +20,6 @@ public class PlatformRolePermissionController {
     private final SystemRolePermissionUseCase useCase;
     private final AuthoritiesWebMapper mapper;
 
-    @PreAuthorize("hasAuthority('PERM_ERP.ADMIN.READ')")
     @GetMapping(version = "1.0")
     public ResponseEntity<List<PermissionSummaryDto>> list(@PathVariable UUID roleId) {
         return ResponseEntity.ok().body(mapper.toPermissionSummaryDtos(useCase.list(roleId)));

@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.auth.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.RegisterSuperAdminUseCase;
+import com.licode.prodigoerp.auth.application.port.input.RegisterPlatformAdminUseCase;
 import com.licode.prodigoerp.auth.application.port.input.internal.AccessProvisioningUseCase;
 import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
@@ -13,12 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SuperAdminService implements RegisterSuperAdminUseCase {
+public class PlatformAdminService implements RegisterPlatformAdminUseCase {
 
     private final LoadUserPort loadUserPort;
     private final SaveUserUseCase saveUserUseCase;
@@ -27,7 +25,7 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
 
     @Override
     @Transactional
-    public String register(RegisterSuperAdminCommand cmd) {
+    public String register(RegisterPlatformAdminCommand cmd) {
 
         if(loadUserPort.findUserByUsername(cmd.username()).isPresent()){
             log.error("Username {} already exists", cmd.username());
@@ -54,8 +52,8 @@ public class SuperAdminService implements RegisterSuperAdminUseCase {
                 author
         );
 
-        UUID roleId = provisioning.ensureSuperAdminRole(author);
-        provisioning.assignRoleToUser(fetchedUser.getId(), roleId, null, author);
+//        UUID roleId = provisioning.ensureSuperAdminRole(author);
+        provisioning.assignRoleToUser(fetchedUser.getId(), cmd.roleId(), null, author);
 
         log.info("Super admin {} created by {}", fetchedUser.getUsername(), author);
         return "Super admin " + fetchedUser.getUsername() + " created successfully";
