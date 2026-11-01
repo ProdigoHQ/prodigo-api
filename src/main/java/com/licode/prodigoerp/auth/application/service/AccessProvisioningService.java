@@ -1,6 +1,8 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.helpers.RolePermissionLinker;
+import com.licode.prodigoerp.auth.application.port.input.command.AssignRoleCommand;
+import com.licode.prodigoerp.auth.application.port.input.command.CreateRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.EnsurePermissionCommand;
 import com.licode.prodigoerp.auth.application.port.input.internal.AccessProvisioningUseCase;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
@@ -43,11 +45,12 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
     @Override
     public UUID ensureSuperAdminRole(String author) {
         Role role = rolePort.findSystemRoleByName(SUPER_ADMIN_ROLE)
-                .orElseGet(() -> rolePort.save(newRole(
+                .orElseGet(() -> rolePort.save(newRole(new CreateRoleCommand(
                         SUPER_ADMIN_ROLE, null,
                         "SUPER_ADMIN: default role to access the ERP system dashboard",
+                        true,
                         author
-                )));
+                ))));
 
         List<Permission> platformPermissions = permissionPort.findAllByCodeStartingWith("ERP.");
 
@@ -77,12 +80,13 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
     @Override
     public UUID createTenantMemberRole(UUID tenantId, String author) {
         Tenant tenant = tenantLookUp.findTenantById(tenantId);
-        Role role = rolePort.save(newRole(
+        Role role = rolePort.save(newRole(new CreateRoleCommand(
                 "MEMBER",
                 tenant,
                 "MEMBER: standard tenant user",
+                true,
                 author
-        ));
+        )));
         log.info("Member role {} created for tenant {}", role.getId(), tenantId);
         return role.getId();
     }
@@ -105,12 +109,13 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
 
         Tenant tenant = tenantLookUp.findTenantById(tenantId);
 
-        Role role = rolePort.save(newRole(
+        Role role = rolePort.save(newRole(new CreateRoleCommand(
                 roleName,
                 tenant,
                 roleName + ": full access to the tenant (company)",
+                true,
                 author
-        ));
+        )));
 
         permissions.forEach(p -> linker.link(role, p, author));
         log.info("Admin role {} created for tenant {} with {}", role.getId(), tenantId, codes);
@@ -119,7 +124,12 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
     }
 
     @Override
-    public void assignRoleToUser(UUID userId, UUID roleId, UUID tenantId, String author) {
+    public void assignRoleToUser(AssignRoleCommand command) {
+
+        UUID userId = command.userId();
+        UUID roleId = command.roleId();
+        UUID tenantId = command.tenantId();
+        String author = command.assignBy();
 
         if (rolePort.userRoleExists(userId, roleId, tenantId)) {
             return;
@@ -187,20 +197,20 @@ public class AccessProvisioningService implements AccessProvisioningUseCase {
 
     // helper functions
 
-    private Role newRole(String name, Tenant tenant, String description, String author){
+    private Role newRole(CreateRoleCommand command){
         Instant now = Instant.now();
 
         Role role = new Role();
 
         role.setId(null);
-        role.setName(name);
-        role.setDescription(description);
-        role.setTenant(tenant);
-        role.setIsDefault(true);
+        role.setName(command.roleName());
+        role.setDescription(command.description());
+        role.setTenant(command.tenant());
+        role.setIsDefault(command.isDefault());
         role.setCreatedAt(now);
         role.setUpdatedAt(now);
-        role.setCreatedBy(author);
-        role.setUpdatedBy(author);
+        role.setCreatedBy(command.author());
+        role.setUpdatedBy(command.author());
 
         return role;
     }

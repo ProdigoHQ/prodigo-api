@@ -1,11 +1,12 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.CreatePermissionDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.UpdatePermissionDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.CreatePermissionRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.UpdatePermissionRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.PermissionSummaryResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.PermissionCatalogUseCase;
-import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.query.GetPermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,32 +23,33 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PlatformPermissionController {
 
-    private final AuthoritiesWebMapper mapper;
+    private final AuthoritiesRestMapper mapper;
     private final PermissionCatalogUseCase useCase;
 
     @GetMapping(version = "1.0")
-    public ResponseEntity<List<PermissionSummaryDto>> list(){
-        return ResponseEntity.ok(mapper.toPermissionSummaryDtos(useCase.listPermissions()));
+    public ResponseEntity<List<PermissionSummaryResponse>> list(){
+        return ResponseEntity.ok(mapper.toPermissionSummaryResponses(useCase.listPermissions()));
     }
 
     @GetMapping(value = "/{permissionId}", version = "1.0")
-    public ResponseEntity<PermissionSummaryDto> get(@PathVariable UUID permissionId){
-        return ResponseEntity.ok(mapper.toPermissionSummaryDto(useCase.getPermissionById(permissionId)));
+    public ResponseEntity<PermissionSummaryResponse> get(@PathVariable UUID permissionId){
+        return ResponseEntity.ok(mapper.toPermissionSummaryResponse(
+                useCase.getPermissionById(new GetPermissionSummaryQuery(permissionId))));
     }
 
     @PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.CREATE','PERM_ERP.PERMISSION.UPDATE')")
     @PostMapping(version = "1.0")
-    public ResponseEntity<PermissionSummaryDto> create(@Valid @RequestBody CreatePermissionDto dto){
-        PermissionSummaryQuery created = useCase.create(mapper.toCreatePermissionCommand(dto));
+    public ResponseEntity<PermissionSummaryResponse> create(@Valid @RequestBody CreatePermissionRequest request){
+        PermissionSummaryResult created = useCase.create(mapper.toCreatePermissionCommand(request));
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toPermissionSummaryDto(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toPermissionSummaryResponse(created));
     }
 
     @PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.CREATE','PERM_ERP.PERMISSION.UPDATE')")
     @PutMapping(value = "/{permissionId}", version = "1.0")
-    public ResponseEntity<PermissionSummaryDto> update(@PathVariable UUID permissionId, @Valid @RequestBody UpdatePermissionDto dto){
+    public ResponseEntity<PermissionSummaryResponse> update(@PathVariable UUID permissionId, @Valid @RequestBody UpdatePermissionRequest request){
         return ResponseEntity.ok().body(
-                mapper.toPermissionSummaryDto(useCase.update(permissionId, mapper.toUpdatePermissionCommand(dto)))
+                mapper.toPermissionSummaryResponse(useCase.update(permissionId, mapper.toUpdatePermissionCommand(request)))
         );
     }
 

@@ -3,8 +3,9 @@ package com.licode.prodigoerp.auth.application.service;
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.PermissionCatalogUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
-import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 import com.licode.prodigoerp.auth.application.port.input.command.UpdatePermissionCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.GetPermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.ConflictException;
@@ -32,7 +33,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
     private final CurrentUserPort currentUser;
 
     @Override
-    public PermissionSummaryQuery create(CreatePermissionCommand cmd) {
+    public PermissionSummaryResult create(CreatePermissionCommand cmd) {
         Module module = null;
         String code;
 
@@ -80,7 +81,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
     }
 
     @Override
-    public PermissionSummaryQuery update(UUID permissionId, UpdatePermissionCommand command) {
+    public PermissionSummaryResult update(UUID permissionId, UpdatePermissionCommand command) {
         Permission p = load(permissionId);
 
         p.setDescription(command.description());
@@ -92,8 +93,8 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public PermissionSummaryQuery getPermissionById(UUID permissionId) {
-        return AuthMappings.toSummary(load(permissionId));
+    public PermissionSummaryResult getPermissionById(GetPermissionSummaryQuery query) {
+        return AuthMappings.toSummary(load(query.permissionId()));
     }
 
     @Override
@@ -115,7 +116,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PermissionSummaryQuery> listPermissions() {
+    public List<PermissionSummaryResult> listPermissions() {
 
         return permissionPort.findAll().stream()
                 .map(AuthMappings::toSummary).toList();

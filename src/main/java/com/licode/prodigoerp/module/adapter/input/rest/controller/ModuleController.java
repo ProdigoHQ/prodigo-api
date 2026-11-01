@@ -1,10 +1,10 @@
 package com.licode.prodigoerp.module.adapter.input.rest.controller;
 
 
-import com.licode.prodigoerp.module.adapter.input.rest.dto.ShowPublicModuleDto;
-import com.licode.prodigoerp.module.adapter.input.rest.mapper.ModuleWebMapper;
+import com.licode.prodigoerp.module.adapter.input.rest.dto.response.PublicModuleResponse;
+import com.licode.prodigoerp.module.adapter.input.rest.mapper.ModuleRestMapper;
 import com.licode.prodigoerp.module.application.port.input.AllPublicModuleLookUp;
-import com.licode.prodigoerp.module.application.port.input.command.ShowPublicModuleCommand;
+import com.licode.prodigoerp.module.application.port.input.result.PublicModuleResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,17 +18,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ModuleController {
 
-    private final ModuleWebMapper moduleWebMapper;
+    private final ModuleRestMapper moduleRestMapper;
     private final AllPublicModuleLookUp allPublicModuleLookUp;
 
     @GetMapping(value = "/public", version = "1.0")
-    public ResponseEntity<List<ShowPublicModuleDto>> publicModule() {
+    public ResponseEntity<List<PublicModuleResponse>> publicModule() {
 
-        List<ShowPublicModuleCommand> showPublicModuleCommandList = allPublicModuleLookUp.findAllPublicModules();
+        List<PublicModuleResult> publicModules = allPublicModuleLookUp.findAllPublicModules();
 
         return ResponseEntity.ok().body(
-                showPublicModuleCommandList.stream().map(
-                        moduleWebMapper::toShowPublicModuleDto
+                publicModules.stream().map(
+                        moduleRestMapper::toPublicModuleResponse
                 ).toList()
         );
     }

@@ -2,8 +2,11 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.SystemRoleUseCase;
-import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import com.licode.prodigoerp.auth.application.port.input.command.SaveRoleCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.GetRoleDetailsQuery;
+import com.licode.prodigoerp.auth.application.port.input.query.GetTenantRoleDetailsQuery;
+import com.licode.prodigoerp.auth.application.port.input.query.ListTenantRolesQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.common.exception.ConflictException;
@@ -65,10 +68,10 @@ public class SystemRoleService implements SystemRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleDetailsResult get(UUID roleId) {
-        Role role = loadSystemRole(roleId);
+    public RoleDetailsResult get(GetRoleDetailsQuery query) {
+        Role role = loadSystemRole(query.roleId());
 
-        return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(roleId));
+        return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(query.roleId()));
     }
 
     @Override
@@ -93,19 +96,19 @@ public class SystemRoleService implements SystemRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleDetailsResult> listTenantRoles(UUID tenantId) {
-        return rolePort.findByTenantId(tenantId).stream()
+    public List<RoleDetailsResult> listTenantRoles(ListTenantRolesQuery query) {
+        return rolePort.findByTenantId(query.tenantId()).stream()
                 .map(r -> AuthMappings.toSummary(r, List.of()))
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public RoleDetailsResult getTenantRole(UUID tenantId, UUID roleId) {
-        Role role = rolePort.findTenantRole(roleId, tenantId)
-                .orElseThrow(() -> new NotFoundException("Role not found with id: " + roleId));
+    public RoleDetailsResult getTenantRole(GetTenantRoleDetailsQuery query) {
+        Role role = rolePort.findTenantRole(query.roleId(), query.tenantId())
+                .orElseThrow(() -> new NotFoundException("Role not found with id: " + query.roleId()));
 
-        return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(roleId));
+        return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(query.roleId()));
     }
 
     // On creating set all fields else just set the updated fields

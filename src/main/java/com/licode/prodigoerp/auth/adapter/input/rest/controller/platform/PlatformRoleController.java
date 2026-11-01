@@ -1,9 +1,12 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.RoleSummaryDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.SaveRoleDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.SaveRoleRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.RoleDetailsResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.SystemRoleUseCase;
+import com.licode.prodigoerp.auth.application.port.input.query.GetRoleDetailsQuery;
+import com.licode.prodigoerp.auth.application.port.input.query.GetTenantRoleDetailsQuery;
+import com.licode.prodigoerp.auth.application.port.input.query.ListTenantRolesQuery;
 import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,35 +24,36 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PlatformRoleController {
 
-    private final AuthoritiesWebMapper  mapper;
+    private final AuthoritiesRestMapper  mapper;
     private final SystemRoleUseCase useCase;
 
     // Get system roles
     @GetMapping(value = "/roles", version = "1.0")
-    public ResponseEntity<List<RoleSummaryDto>> list(){
+    public ResponseEntity<List<RoleDetailsResponse>> list(){
         return ResponseEntity.ok().body(
-                mapper.toRoleSummaryDtos(useCase.list())
+                mapper.toRoleDetailsResponses(useCase.list())
         );
     }
 
     @GetMapping(value = "/roles/{roleId}", version = "1.0")
-    public ResponseEntity<RoleSummaryDto> get(@PathVariable UUID roleId){
-        return ResponseEntity.ok().body(mapper.toRoleSummaryDto(useCase.get(roleId)));
+    public ResponseEntity<RoleDetailsResponse> get(@PathVariable UUID roleId){
+        return ResponseEntity.ok().body(
+                mapper.toRoleDetailsResponse(useCase.get(new GetRoleDetailsQuery(roleId))));
     }
 
     @PreAuthorize("hasAnyAuthority('PERM_ERP.ROLE.CREATE','PERM_ERP.ROLE.UPDATE')")
     @PostMapping(value = "/roles", version = "1.0")
-    public ResponseEntity<RoleSummaryDto> create(@Valid @RequestBody SaveRoleDto dto){
-        RoleDetailsResult created = useCase.create(mapper.toSaveRoleCommand(dto));
+    public ResponseEntity<RoleDetailsResponse> create(@Valid @RequestBody SaveRoleRequest request){
+        RoleDetailsResult created = useCase.create(mapper.toSaveRoleCommand(request));
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toRoleSummaryDto(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toRoleDetailsResponse(created));
     }
 
     @PreAuthorize("hasAnyAuthority('PERM_ERP.ROLE.CREATE','PERM_ERP.ROLE.UPDATE')")
     @PutMapping(value = "/roles/{roleId}", version = "1.0")
-    public ResponseEntity<RoleSummaryDto> update(@PathVariable UUID roleId, @Valid @RequestBody SaveRoleDto dto){
+    public ResponseEntity<RoleDetailsResponse> update(@PathVariable UUID roleId, @Valid @RequestBody SaveRoleRequest request){
 
-        return ResponseEntity.ok().body(mapper.toRoleSummaryDto(useCase.update(roleId, mapper.toSaveRoleCommand(dto))));
+        return ResponseEntity.ok().body(mapper.toRoleDetailsResponse(useCase.update(roleId, mapper.toSaveRoleCommand(request))));
     }
 
     @PreAuthorize("hasAuthority('PERM_ERP.ROLE.DELETE')")
@@ -63,14 +67,16 @@ public class PlatformRoleController {
     // read-only : superadmin can inspect tenant's roles
     @PreAuthorize("hasAuthority('PERM_ERP.USER.READ')")
     @GetMapping(value = "/tenants/{tenantId}/roles", version = "1.0")
-    public ResponseEntity<List<RoleSummaryDto>> listTenantRoles(@PathVariable UUID tenantId){
-        return ResponseEntity.ok().body(mapper.toRoleSummaryDtos(useCase.listTenantRoles(tenantId)));
+    public ResponseEntity<List<RoleDetailsResponse>> listTenantRoles(@PathVariable UUID tenantId){
+        return ResponseEntity.ok().body(
+                mapper.toRoleDetailsResponses(useCase.listTenantRoles(new ListTenantRolesQuery(tenantId))));
     }
 
     @PreAuthorize("hasAuthority('PERM_ERP.USER.READ')")
     @GetMapping(value = "/tenants/{tenantId}/roles/{roleId}", version = "1.0")
-    public ResponseEntity<RoleSummaryDto> get(@PathVariable UUID tenantId, @PathVariable UUID roleId){
+    public ResponseEntity<RoleDetailsResponse> get(@PathVariable UUID tenantId, @PathVariable UUID roleId){
 
-        return ResponseEntity.ok().body(mapper.toRoleSummaryDto(useCase.getTenantRole(tenantId, roleId)));
+        return ResponseEntity.ok().body(mapper.toRoleDetailsResponse(
+                useCase.getTenantRole(new GetTenantRoleDetailsQuery(tenantId, roleId))));
     }
 }

@@ -1,9 +1,9 @@
 package com.licode.prodigoerp.auth.application.port.input;
 
 
-import com.licode.prodigoerp.auth.application.port.input.command.RegisterPlatformAdminCommand;
+import com.licode.prodigoerp.auth.application.port.input.command.CreateAdminCommand;
 
 public interface RegisterPlatformAdminUseCase {
 
-    String register(RegisterPlatformAdminCommand registerSuperAdminCommand);
+    String register(CreateAdminCommand command);
 }

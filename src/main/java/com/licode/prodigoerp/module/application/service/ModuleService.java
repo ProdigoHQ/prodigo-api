@@ -1,16 +1,19 @@
 package com.licode.prodigoerp.module.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.PermissionCatalogUseCase;
+import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
+import com.licode.prodigoerp.module.application.helpers.ModuleMappings;
 import com.licode.prodigoerp.module.application.port.input.ModuleCreateUseCase;
 import com.licode.prodigoerp.module.application.port.input.ModuleLookUpUseCase;
 import com.licode.prodigoerp.module.application.port.input.ModuleSubscriptionUseCase;
-import com.licode.prodigoerp.module.application.port.input.TenantModuleSubCreateUseCase;
-import com.licode.prodigoerp.module.application.port.input.command.CreateModuleSubCommand;
-import com.licode.prodigoerp.module.application.port.input.command.RegisterModuleCommand;
+import com.licode.prodigoerp.module.application.port.input.TenantModuleSubscriptionUseCase;
+import com.licode.prodigoerp.module.application.port.input.command.CreateModuleCommand;
+import com.licode.prodigoerp.module.application.port.input.command.CreateModuleSubscriptionCommand;
 import com.licode.prodigoerp.module.application.port.input.command.SelectedModuleCommand;
+import com.licode.prodigoerp.module.application.port.input.result.ModuleDetailsResult;
 import com.licode.prodigoerp.module.application.port.output.ModuleQueryPort;
 import com.licode.prodigoerp.module.application.port.output.SaveModulePort;
 import com.licode.prodigoerp.module.domain.model.Module;
@@ -28,7 +31,7 @@ import java.util.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreateUseCase {
+public class ModuleService implements TenantModuleSubscriptionUseCase, ModuleCreateUseCase {
 
     private final ModuleLookUpUseCase moduleLookUpUseCase;
     private final TenantLookUpUseCase tenantLookUpUseCase;
@@ -77,7 +80,7 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
             allModuleSubscriptions.put(selectedModule.getModuleKey(), selectedModule);
 
             // TODO: Figure out to relate the currency depending on the user (Tenant) country
-            CreateModuleSubCommand createModuleSubCommand = new CreateModuleSubCommand(
+            CreateModuleSubscriptionCommand createModuleSubscriptionCommand = new CreateModuleSubscriptionCommand(
                     tenant,
                     selectedModule,
                     isFree,
@@ -85,8 +88,8 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
                     "XAF"
             );
 
-            // Then Save the ModuleSub
-            moduleSubscriptionUseCase.createModuleSubscription(createModuleSubCommand);
+            // Then Save the ModuleSubscription
+            moduleSubscriptionUseCase.createModuleSubscription(createModuleSubscriptionCommand);
         });
 
         return allModuleSubscriptions;
@@ -94,12 +97,12 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
 
     @Override
     @Transactional
-    public Module createModule(RegisterModuleCommand registerModuleCommand) {
+    public ModuleDetailsResult createModule(CreateModuleCommand command) {
 
         // check if there is already a Module with the moduleKey provided
-        if(moduleQueryPort.findModuleByModuleKey(registerModuleCommand.moduleKey().toUpperCase()).isPresent()){
-            log.error("Module already exists with id: {}", registerModuleCommand.moduleKey().toUpperCase());
-            throw new ConflictException("Module already exists with this key: " + registerModuleCommand.moduleKey());
+        if(moduleQueryPort.findModuleByModuleKey(command.moduleKey().toUpperCase()).isPresent()){
+            log.error("Module already exists with id: {}", command.moduleKey().toUpperCase());
+            throw new ConflictException("Module already exists with this key: " + command.moduleKey());
         }
 
         String actor = currentUser.usernameOrSystem();
@@ -108,10 +111,10 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
         Instant now = Instant.now();
 
         newModule.setId(null);
-        newModule.setDescription(registerModuleCommand.description());
-        newModule.setModuleKey(registerModuleCommand.moduleKey().toUpperCase());
-        newModule.setName(registerModuleCommand.name());
-        newModule.setPrice(registerModuleCommand.price());
+        newModule.setDescription(command.description());
+        newModule.setModuleKey(command.moduleKey().toUpperCase());
+        newModule.setName(command.name());
+        newModule.setPrice(command.price());
         newModule.setCurrency("XAF");
         newModule.setIsActive(true);
         newModule.setCreatedAt(now);
@@ -122,9 +125,11 @@ public class ModuleService implements TenantModuleSubCreateUseCase, ModuleCreate
         Module createdModule = saveModulePort.saveModule(newModule);
 
         // We need to generate all permissions for the module created
-        registerModuleCommand.createPermissions()
-                .forEach(permissionCatalogUseCase::create);
+        List<PermissionSummaryResult> createdPermissions = command.createPermissions()
+                .stream()
+                .map(permissionCatalogUseCase::create)
+                .toList();
 
-        return createdModule;
+        return ModuleMappings.toDetails(createdModule, createdPermissions);
     }
 }

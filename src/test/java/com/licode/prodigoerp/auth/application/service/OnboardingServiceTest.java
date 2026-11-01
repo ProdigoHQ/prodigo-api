@@ -2,6 +2,9 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
+import com.licode.prodigoerp.auth.application.port.input.query.GetUserAccessQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.AuthResult;
+import com.licode.prodigoerp.auth.application.port.input.result.UserAccessResult;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
 import com.licode.prodigoerp.auth.application.port.output.RefreshTokenStorePort;
 import com.licode.prodigoerp.auth.application.port.output.TokenGeneratorPort;
@@ -11,7 +14,7 @@ import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
-import com.licode.prodigoerp.module.application.port.input.TenantModuleSubCreateUseCase;
+import com.licode.prodigoerp.module.application.port.input.TenantModuleSubscriptionUseCase;
 import com.licode.prodigoerp.module.application.port.input.command.SelectedModuleCommand;
 import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.input.CreateTenantUseCase;
@@ -41,7 +44,7 @@ class OnboardingServiceTest {
     @Mock private TenantLookUpUseCase tenantLookUpUseCase;
     @Mock private CreateTenantUseCase createTenantUseCase;
     @Mock private TenantEntitlementUseCase tenantEntitlementUseCase;
-    @Mock private TenantModuleSubCreateUseCase tenantModuleSubCreateUseCase;
+    @Mock private TenantModuleSubscriptionUseCase tenantModuleSubscriptionUseCase;
     @Mock private RefreshTokenStorePort refreshTokenStorePort;
     @Mock private SaveUserUseCase saveUserUseCase;
     @Mock private TokenGeneratorPort tokenGeneratorPort;
@@ -68,7 +71,7 @@ class OnboardingServiceTest {
     private Role adminRole;
     private RefreshToken refreshToken;
     private Map<String, Module> subscriptions;
-    private UserAccessCommand accesses;
+    private UserAccessResult accesses;
 
     @BeforeEach
     void setUp(){
@@ -77,7 +80,7 @@ class OnboardingServiceTest {
                 tenantLookUpUseCase,
                 createTenantUseCase,
                 tenantEntitlementUseCase,
-                tenantModuleSubCreateUseCase,
+                tenantModuleSubscriptionUseCase,
                 refreshTokenStorePort,
                 tokenGeneratorPort,
                 saveUserUseCase,
@@ -148,7 +151,7 @@ class OnboardingServiceTest {
         inventoryPermission.setId(ADMIN_ROLE_ID);
         inventoryPermission.setCode("Inventory.MODULE.INVENTORY");
 
-        accesses = new UserAccessCommand(new ArrayList<>(),  new ArrayList<>());
+        accesses = new UserAccessResult(new ArrayList<>(),  new ArrayList<>());
     }
 
     @Nested
@@ -167,20 +170,20 @@ class OnboardingServiceTest {
             when(currentUser.usernameOrSystem()).thenReturn(ACTOR);
             when(createTenantUseCase.create(any(CreateTenantCommand.class)))
                     .thenReturn(tenant);
-            when(tenantModuleSubCreateUseCase.createTenantModuleSubscription(eq(tenant.getId()),eq(registerUserCommand.selectedModules())))
+            when(tenantModuleSubscriptionUseCase.createTenantModuleSubscription(eq(tenant.getId()),eq(registerUserCommand.selectedModules())))
                     .thenReturn(subscriptions);
-            when(tenantModuleSubCreateUseCase.createTenantModuleSubscription(
+            when(tenantModuleSubscriptionUseCase.createTenantModuleSubscription(
                 tenant.getId(),registerUserCommand.selectedModules()
             )).thenReturn(subscriptions);
             when(saveUserUseCase.save(any(CreateUserCommand.class), eq(ACTOR))).thenReturn(user);
             when(provisioningService.createTenantAdminRole(tenant.getId(), subscriptions.keySet(), ACTOR)).thenReturn(adminRole.getId());
             when(refreshTokenStorePort.createRefreshToken(user)).thenReturn(refreshToken);
             when(tokenGeneratorPort.generateAccessToken(user)).thenReturn("access-token-value");
-            when(accessQuery.activeAccess(user.getId())).thenReturn(accesses);
+            when(accessQuery.activeAccess(new GetUserAccessQuery(user.getId()))).thenReturn(accesses);
 
             // When
 
-            AuthResponseCommand response = onboardingService.register(registerUserCommand);
+            AuthResult response = onboardingService.register(registerUserCommand);
 
             // then : the response reflects what the mocked collaborators returned
             verify(createTenantUseCase).create(any(CreateTenantCommand.class));

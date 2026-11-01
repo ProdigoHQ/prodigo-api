@@ -1,10 +1,10 @@
 package com.licode.prodigoerp.auth.application.port.input;
 
-import com.licode.prodigoerp.auth.application.port.input.command.AuthResponseCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.RegisterUserCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.AuthResult;
 
 public interface RegisterUserUseCase {
 
-    AuthResponseCommand register(RegisterUserCommand registerUserCommand);
+    AuthResult register(RegisterUserCommand registerUserCommand);
 
 }

@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.auth.application.port.input.internal;
 
+import com.licode.prodigoerp.auth.application.port.input.command.AssignRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.EnsurePermissionCommand;
 
 import java.util.Collection;
@@ -20,7 +21,7 @@ public interface AccessProvisioningUseCase {
     // Creates the default member role for a new tenant.
     UUID createTenantMemberRole(UUID tenantId, String author);
 
-    void assignRoleToUser(UUID userID, UUID roleId, UUID tenantId, String author);
+    void assignRoleToUser(AssignRoleCommand command);
 
     // creates the permission if missing, returns its code. NOTE: will be used by seeders
     String ensurePermission(EnsurePermissionCommand command);

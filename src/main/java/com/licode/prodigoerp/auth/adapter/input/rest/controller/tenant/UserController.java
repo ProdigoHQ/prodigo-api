@@ -1,16 +1,15 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.tenant;
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.AuthResponseDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.RegisterRequestDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.RegisterUserRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.AuthResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.RegisterUserUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.AuthResponseCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.AuthResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,14 +23,14 @@ import java.time.Duration;
 public class UserController {
 
     private final RegisterUserUseCase registerUserUseCase;
-    private final AuthWebMapper authWebMapper;
+    private final AuthRestMapper authRestMapper;
 
     @PostMapping(value = "/register", version = "1.0")
-    public ResponseEntity<AuthResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequestDto) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterUserRequest request) {
 
-        AuthResponseCommand authResponseCommand = registerUserUseCase.register(authWebMapper.toRegisterUserCommand(registerRequestDto));
+        AuthResult authResult = registerUserUseCase.register(authRestMapper.toRegisterUserCommand(request));
 
-        String refreshToken = authResponseCommand.refreshToken();
+        String refreshToken = authResult.refreshToken();
 
         ResponseCookie responseCookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
@@ -42,7 +41,7 @@ public class UserController {
                 .build();
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(
-               authWebMapper.toAuthResponseDto(authResponseCommand)
+               authRestMapper.toAuthResponse(authResult)
         );
     }
 }

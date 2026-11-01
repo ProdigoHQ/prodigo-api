@@ -3,7 +3,8 @@ package com.licode.prodigoerp.tenant.application.service;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
-import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
+import com.licode.prodigoerp.module.application.port.input.query.GetTenantModuleDetailsQuery;
+import com.licode.prodigoerp.module.application.port.input.result.ModuleDetailsResult;
 import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.output.TenantModuleQueryPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +64,8 @@ class TenantModuleServiceIntegrationTest {
         Optional<Module> fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(crmModule.getModuleKey(), tenantId);
         when(permissionPort.findPermissionsByModuleKey(crmModule.getModuleKey())).thenReturn(associatedFetchedPermissions);
 
-        ModuleSummaryCommand actual = tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(crmModule.getModuleKey(), tenantId);
+        ModuleDetailsResult actual = tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(
+                new GetTenantModuleDetailsQuery(crmModule.getModuleKey(), tenantId));
 
         assertNotNull(actual);
         assertEquals(crmModule.getName(), actual.name());
@@ -77,7 +79,8 @@ class TenantModuleServiceIntegrationTest {
         Optional<Module> fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId("CRMS", tenantId);
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> {
-            tenantModuleService.findModuleWithPermissionsByKeyAndTenantId("CRMS", tenantId);
+            tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(
+                    new GetTenantModuleDetailsQuery("CRMS", tenantId));
         });
 
         assertEquals("No Module Found with this module key: 'CRMS' among  your subscription", ex.getMessage());

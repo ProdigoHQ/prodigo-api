@@ -1,10 +1,10 @@
 package com.licode.prodigoerp.auth.application.port.input;
 
-import com.licode.prodigoerp.auth.application.port.input.query.UserSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.UserSummaryResult;
 
 import java.util.List;
 
 public interface PlatformAdminQueryUseCase {
 
-    List<UserSummaryQuery> get();
+    List<UserSummaryResult> findAllAdmins();
 }

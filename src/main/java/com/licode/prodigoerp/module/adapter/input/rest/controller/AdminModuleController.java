@@ -1,7 +1,7 @@
 package com.licode.prodigoerp.module.adapter.input.rest.controller;
 
-import com.licode.prodigoerp.module.adapter.input.rest.dto.RegisterModuleDto;
-import com.licode.prodigoerp.module.adapter.input.rest.mapper.ModuleWebMapper;
+import com.licode.prodigoerp.module.adapter.input.rest.dto.request.CreateModuleRequest;
+import com.licode.prodigoerp.module.adapter.input.rest.mapper.ModuleRestMapper;
 import com.licode.prodigoerp.module.application.port.input.ModuleCreateUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AdminModuleController {
     private final ModuleCreateUseCase moduleCreateUseCase;
-    private final ModuleWebMapper moduleWebMapper;
+    private final ModuleRestMapper moduleRestMapper;
 
     @PostMapping(path = "/", version = "1.0")
-    public ResponseEntity<String> createModule(@RequestBody RegisterModuleDto registerModuleDto) {
+    public ResponseEntity<String> createModule(@RequestBody CreateModuleRequest request) {
 
         moduleCreateUseCase.createModule(
-                moduleWebMapper.toRegisterModuleCommand(registerModuleDto)
+                moduleRestMapper.toCreateModuleCommand(request)
         );
 
         return ResponseEntity.ok("Module created successfully");

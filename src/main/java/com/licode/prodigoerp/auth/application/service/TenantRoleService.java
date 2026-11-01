@@ -2,8 +2,9 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.TenantRoleUseCase;
-import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import com.licode.prodigoerp.auth.application.port.input.command.SaveRoleCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.GetRoleDetailsQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.common.exception.ConflictException;
@@ -77,10 +78,10 @@ public class TenantRoleService implements TenantRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleDetailsResult get(UUID roleId) {
-        Role role = load(roleId, currentUserPort.requireTenantId());
+    public RoleDetailsResult get(GetRoleDetailsQuery query) {
+        Role role = load(query.roleId(), currentUserPort.requireTenantId());
 
-        return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(roleId));
+        return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(query.roleId()));
     }
 
     @Override

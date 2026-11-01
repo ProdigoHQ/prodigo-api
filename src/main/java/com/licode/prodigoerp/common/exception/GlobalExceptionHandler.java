@@ -1,9 +1,9 @@
 package com.licode.prodigoerp.common.exception;
 
 import com.licode.prodigoerp.common.security.exception.JwtValidationException;
-import com.licode.prodigoerp.common.exception.dto.ApiErrorResponse;
-import com.licode.prodigoerp.common.exception.dto.FieldErrorResponse;
-import com.licode.prodigoerp.common.exception.dto.ValidationErrorResponse;
+import com.licode.prodigoerp.common.exception.dto.response.ApiErrorResponse;
+import com.licode.prodigoerp.common.exception.dto.response.FieldErrorResponse;
+import com.licode.prodigoerp.common.exception.dto.response.ValidationErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

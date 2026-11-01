@@ -1,21 +1,24 @@
 package com.licode.prodigoerp.tenant.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
-import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
-import com.licode.prodigoerp.tenant.application.port.input.TenantModuleUseCase;
-import com.licode.prodigoerp.module.application.port.input.command.ShowPublicModuleCommand;
-import com.licode.prodigoerp.tenant.application.port.output.TenantModuleQueryPort;
+import com.licode.prodigoerp.module.application.helpers.ModuleMappings;
+import com.licode.prodigoerp.module.application.port.input.query.GetTenantModuleDetailsQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListAvailableTenantModulesQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListTenantActiveModulesQuery;
+import com.licode.prodigoerp.module.application.port.input.result.ModuleDetailsResult;
+import com.licode.prodigoerp.module.application.port.input.result.PublicModuleResult;
 import com.licode.prodigoerp.module.domain.model.Module;
+import com.licode.prodigoerp.tenant.application.port.input.TenantModuleUseCase;
+import com.licode.prodigoerp.tenant.application.port.output.TenantModuleQueryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -26,68 +29,35 @@ public class TenantModuleService implements TenantModuleUseCase {
     private final PermissionPersistencePort permissionPersistencePort;
 
     @Override
-    public List<ShowPublicModuleCommand> findAllActiveModulesByTenantId(UUID tenantId) {
-        List<Module> modules = tenantModuleQueryPort.findAllActiveModulesByTenantId(tenantId);
-
-        return modules.stream().map(
-                module -> new ShowPublicModuleCommand(
-                        module.getId(),
-                        module.getName(),
-                        module.getDescription(),
-                        module.getModuleKey(),
-                        module.getPrice(),
-                        module.getCurrency()
-                )
-        ).toList();
+    public List<PublicModuleResult> findAllActiveModulesByTenantId(ListTenantActiveModulesQuery query) {
+        return tenantModuleQueryPort.findAllActiveModulesByTenantId(query.tenantId()).stream()
+                .map(ModuleMappings::toPublicSummary)
+                .toList();
     }
 
     @Override
-    public List<ShowPublicModuleCommand> findAllAvailableModulesToPay(UUID tenantId) {
-
-        List<Module> modules = tenantModuleQueryPort.findAllAvailableModulesToPay(tenantId);
-
-        return modules.stream().map(
-                module -> new ShowPublicModuleCommand(
-                        module.getId(),
-                        module.getName(),
-                        module.getDescription(),
-                        module.getModuleKey(),
-                        module.getPrice(),
-                        module.getCurrency()
-                )
-        ).toList();
+    public List<PublicModuleResult> findAllAvailableModulesToPay(ListAvailableTenantModulesQuery query) {
+        return tenantModuleQueryPort.findAllAvailableModulesToPay(query.tenantId()).stream()
+                .map(ModuleMappings::toPublicSummary)
+                .toList();
     }
 
     @Override
-    public ModuleSummaryCommand findModuleWithPermissionsByKeyAndTenantId(String moduleKey, UUID tenantId) {
+    public ModuleDetailsResult findModuleWithPermissionsByKeyAndTenantId(GetTenantModuleDetailsQuery query) {
 
-        Optional<Module> fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey.toUpperCase(), tenantId);
+        String moduleKey = query.moduleKey();
+        Optional<Module> fetchedModule = tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey.toUpperCase(), query.tenantId());
 
         if(fetchedModule.isEmpty()) {
-            log.error("No module found with module key {} for tenant id: {}",moduleKey,tenantId);
+            log.error("No module found with module key {} for tenant id: {}", moduleKey, query.tenantId());
             throw new NotFoundException("No Module Found with this module key: '" + moduleKey + "' among  your subscription");
         }
 
         List<Permission> associatedFetchedPermissions = permissionPersistencePort.findPermissionsByModuleKey(moduleKey.toUpperCase());
 
-        List<PermissionSummaryQuery> showPermissions = associatedFetchedPermissions.stream()
-                .map(permission -> new PermissionSummaryQuery(
-                        permission.getId(),
-                        permission.getCode(),
-                        permission.getDescription(),
-                        permission.getAction(),
-                        permission.getResource()
-                )).toList();
-
-        return new ModuleSummaryCommand(
-                fetchedModule.get().getId(),
-                fetchedModule.get().getName(),
-                fetchedModule.get().getDescription(),
-                fetchedModule.get().getModuleKey(),
-                fetchedModule.get().getPrice(),
-                fetchedModule.get().getCurrency(),
-                fetchedModule.get().getIsActive(),
-                showPermissions
+        return ModuleMappings.toDetails(
+                fetchedModule.get(),
+                associatedFetchedPermissions.stream().map(AuthMappings::toSummary).toList()
         );
     }
 }

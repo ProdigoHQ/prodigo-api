@@ -154,14 +154,15 @@ issue tokens.
 
 ## Platform / Super Admin — `/api/1.0/s/admin`
 
-Reserved for platform operators. Controllers are guarded with
-`@PreAuthorize("hasRole('SUPER_ADMIN')")`.
+Reserved for platform operators. Controllers are guarded with permission
+authorities such as `@PreAuthorize("hasAuthority('PERM_ERP.ADMIN.READ')")`.
 
-**Super admins** (`SuperAdminController`):
+**Platform admins** (`PlatformAdminController`):
 
-| Method | Path       | Authority            | Description               |
-| ------ | ---------- | -------------------- | ------------------------- |
-| POST   | `/create`  | `ERP.ADMIN.CREATE`   | Create a platform admin   |
+| Method | Path       | Authority               | Description               |
+| ------ | ---------- | ----------------------- | ------------------------- |
+| POST   | `/create`  | `PERM_ERP.ADMIN.CREATE` | Create a platform admin   |
+| GET    | `/admins`  | `PERM_ERP.ADMIN.READ`   | List platform admins      |
 
 **Modules** (`AdminModuleController`):
 

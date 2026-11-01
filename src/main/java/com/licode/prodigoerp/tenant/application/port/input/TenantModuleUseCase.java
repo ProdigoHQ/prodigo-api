@@ -1,13 +1,15 @@
 package com.licode.prodigoerp.tenant.application.port.input;
 
-import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
-import com.licode.prodigoerp.module.application.port.input.command.ShowPublicModuleCommand;
+import com.licode.prodigoerp.module.application.port.input.query.GetTenantModuleDetailsQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListAvailableTenantModulesQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListTenantActiveModulesQuery;
+import com.licode.prodigoerp.module.application.port.input.result.ModuleDetailsResult;
+import com.licode.prodigoerp.module.application.port.input.result.PublicModuleResult;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface TenantModuleUseCase {
-    List<ShowPublicModuleCommand> findAllActiveModulesByTenantId(UUID tenantId);
-    List<ShowPublicModuleCommand> findAllAvailableModulesToPay(UUID tenantId);
-    ModuleSummaryCommand findModuleWithPermissionsByKeyAndTenantId(String moduleKey, UUID tenantId);
+    List<PublicModuleResult> findAllActiveModulesByTenantId(ListTenantActiveModulesQuery query);
+    List<PublicModuleResult> findAllAvailableModulesToPay(ListAvailableTenantModulesQuery query);
+    ModuleDetailsResult findModuleWithPermissionsByKeyAndTenantId(GetTenantModuleDetailsQuery query);
 }

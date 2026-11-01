@@ -1,19 +1,17 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller;
 
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.AuthResponseDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.LoginRequestDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.RefreshResponseDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.AuthResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.LoginRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.RefreshResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.RefreshTokenUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.RefreshResponseCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.RefreshTokenResult;
 import com.licode.prodigoerp.auth.application.port.output.*;
 import com.licode.prodigoerp.auth.domain.model.RefreshToken;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.common.config.TenantContext;
-import com.licode.prodigoerp.tenant.application.port.output.TenantQueryPort;
-import com.licode.prodigoerp.tenant.domain.model.Tenant;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,12 +42,12 @@ public class AuthController {
     private final RefreshTokenStorePort refreshTokenStorePort;
     private final TokenGeneratorPort tokenGeneratorPort;
     private final RefreshTokenUseCase refreshTokenUseCase;
-    private final AuthWebMapper authWebMapper;
+    private final AuthRestMapper authRestMapper;
     private final RolePersistencePort  rolePersistencePort;
     private final PermissionPersistencePort permissionPersistencePort;
 
     @PostMapping(value = "/login", version = "1.0")
-    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest){
 
         // TODO: Need to find a way to refactor the login to follow the Hexagonal Archi
         // Since most of the login logic is handle by spring security
@@ -57,18 +55,18 @@ public class AuthController {
 
         Authentication authenticatedUser =  authenticationManager.
                 authenticate(new UsernamePasswordAuthenticationToken(
-                        loginRequestDto.username(),
-                        loginRequestDto.password()
+                        loginRequest.username(),
+                        loginRequest.password()
                 ));
 
         if( !authenticatedUser.isAuthenticated()){
             throw new BadCredentialsException("Bad credentials");
         }
 
-        Optional<User> user = loadUserPort.findUserByUsername(loginRequestDto.username());
+        Optional<User> user = loadUserPort.findUserByUsername(loginRequest.username());
 
         if(user.isEmpty()){
-            log.error("User not found with username {}", loginRequestDto.username());
+            log.error("User not found with username {}", loginRequest.username());
             throw new NotFoundException("User not found");
         }
 
@@ -102,7 +100,7 @@ public class AuthController {
         return  ResponseEntity.ok().header(
                 HttpHeaders.SET_COOKIE, responseCookie.toString()
         ).body(
-                new AuthResponseDto(
+                new AuthResponse(
                      user.get().getId(),
                         tenantSlug,
                         accessToken,
@@ -113,9 +111,9 @@ public class AuthController {
     }
 
     @GetMapping(value = "/refresh", version = "1.0")
-    public ResponseEntity<RefreshResponseDto> refresh(@CookieValue("refresh_token") String refreshToken) {
+    public ResponseEntity<RefreshResponse> refresh(@CookieValue("refresh_token") String refreshToken) {
 
-        RefreshResponseCommand refreshResponse = refreshTokenUseCase.refreshToken(refreshToken);
+        RefreshTokenResult refreshResponse = refreshTokenUseCase.refreshToken(refreshToken);
 
         ResponseCookie responseCookie = ResponseCookie.from("refresh_token", refreshResponse.refreshToken())
                 .httpOnly(true)
@@ -126,7 +124,7 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(
-            authWebMapper.toRefreshResponseDto(refreshResponse)
+            authRestMapper.toRefreshResponse(refreshResponse)
         );
     }
 

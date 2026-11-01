@@ -1,9 +1,10 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.tenant;
 
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.PermissionSummaryResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.PermissionQueryUseCase;
+import com.licode.prodigoerp.auth.application.port.input.query.GetPermissionSummaryQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,15 +23,16 @@ import java.util.UUID;
 public class TenantPermissionController {
 
     private final PermissionQueryUseCase useCase;
-    private final AuthoritiesWebMapper mapper;
+    private final AuthoritiesRestMapper mapper;
 
     @GetMapping(version = "1.0")
-    public ResponseEntity<List<PermissionSummaryDto>> list(){
-        return ResponseEntity.ok().body(mapper.toPermissionSummaryDtos(useCase.list()));
+    public ResponseEntity<List<PermissionSummaryResponse>> list(){
+        return ResponseEntity.ok().body(mapper.toPermissionSummaryResponses(useCase.list()));
     }
 
     @GetMapping(value = "/{permissionId}", version = "1.0")
-    public ResponseEntity<PermissionSummaryDto> get(@PathVariable UUID permissionId){
-        return ResponseEntity.ok().body(mapper.toPermissionSummaryDto(useCase.get(permissionId)));
+    public ResponseEntity<PermissionSummaryResponse> get(@PathVariable UUID permissionId){
+        return ResponseEntity.ok().body(mapper.toPermissionSummaryResponse(
+                useCase.get(new GetPermissionSummaryQuery(permissionId))));
     }
 }

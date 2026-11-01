@@ -5,12 +5,15 @@ import com.licode.prodigoerp.auth.application.port.input.RegisterUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.input.internal.AccessProvisioningUseCase;
 import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
+import com.licode.prodigoerp.auth.application.port.input.query.GetUserAccessQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.AuthResult;
+import com.licode.prodigoerp.auth.application.port.input.result.UserAccessResult;
 import com.licode.prodigoerp.auth.application.port.output.*;
 import com.licode.prodigoerp.auth.domain.model.RefreshToken;
 import com.licode.prodigoerp.common.exception.ConflictException;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
-import com.licode.prodigoerp.module.application.port.input.TenantModuleSubCreateUseCase;
+import com.licode.prodigoerp.module.application.port.input.TenantModuleSubscriptionUseCase;
 import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.input.CreateTenantUseCase;
 import com.licode.prodigoerp.tenant.application.port.input.TenantEntitlementUseCase;
@@ -34,7 +37,7 @@ public class OnboardingService implements RegisterUserUseCase {
     private final TenantLookUpUseCase tenantLookUp;
     private final CreateTenantUseCase createTenantUseCase;
     private final TenantEntitlementUseCase  tenantEntitlementUseCase;
-    private final TenantModuleSubCreateUseCase tenantModuleSubCreateUseCase;
+    private final TenantModuleSubscriptionUseCase tenantModuleSubscriptionUseCase;
     private final RefreshTokenStorePort refreshTokenStorePort;
     private final TokenGeneratorPort  tokenGeneratorPort;
     private final SaveUserUseCase saveUserUseCase;
@@ -46,7 +49,7 @@ public class OnboardingService implements RegisterUserUseCase {
 
     @Override
     @Transactional
-    public AuthResponseCommand register(RegisterUserCommand cmd) {
+    public AuthResult register(RegisterUserCommand cmd) {
 
         if(loadUserPort.findUserByUsername(cmd.username()).isPresent()){
             log.error("Username: {} already exists",  cmd.username());
@@ -78,9 +81,9 @@ public class OnboardingService implements RegisterUserUseCase {
 
         tenantEntitlementUseCase.createDefaultTenantEntitlement(createdTenant);
 
-        // Then we need to create the moduleSub from the selected module provided
+        // Then we need to create the module subscriptions from the selected modules provided
         // NOTE: the first module in the list of the selected module is free
-        Map<String, Module> subscriptions = tenantModuleSubCreateUseCase.createTenantModuleSubscription(
+        Map<String, Module> subscriptions = tenantModuleSubscriptionUseCase.createTenantModuleSubscription(
                 createdTenant.getId(),
                 cmd.selectedModules()
         );
@@ -103,17 +106,22 @@ public class OnboardingService implements RegisterUserUseCase {
         UUID ownerRoleId = provisioning.createTenantOwnerRole(createdTenant.getId(), subscriptions.keySet(), author);
         provisioning.createTenantAdminRole(createdTenant.getId(), subscriptions.keySet(), author);
         provisioning.createTenantMemberRole(createdTenant.getId(), author);
-        provisioning.assignRoleToUser(fetchedUser.getId(), ownerRoleId, createdTenant.getId(), author);
+        provisioning.assignRoleToUser(new AssignRoleCommand(
+                fetchedUser.getId(),
+                ownerRoleId,
+                createdTenant.getId(),
+                author
+        ));
 
         // Generating the access and refresh token
         RefreshToken refreshToken = refreshTokenStorePort.createRefreshToken(fetchedUser);
         String accessToken = tokenGeneratorPort.generateAccessToken(fetchedUser);
 
-        UserAccessCommand access = accessQuery.activeAccess(fetchedUser.getId());
+        UserAccessResult access = accessQuery.activeAccess(new GetUserAccessQuery(fetchedUser.getId()));
 
         log.info("Tenant {} registered with admin user {}", createdTenant.getSlug(), fetchedUser.getUsername());
 
-        return new AuthResponseCommand(
+        return new AuthResult(
                 fetchedUser.getId(),
                 createdTenant.getSlug(),
                 accessToken,

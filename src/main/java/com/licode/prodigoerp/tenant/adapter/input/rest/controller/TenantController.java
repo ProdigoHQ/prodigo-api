@@ -1,9 +1,10 @@
 package com.licode.prodigoerp.tenant.adapter.input.rest.controller;
 
 import com.licode.prodigoerp.common.config.TenantContext;
-import com.licode.prodigoerp.tenant.adapter.input.rest.dto.PublicTenantEntitlementDto;
-import com.licode.prodigoerp.tenant.adapter.input.rest.mapper.TenantMapper;
+import com.licode.prodigoerp.tenant.adapter.input.rest.dto.response.TenantEntitlementResponse;
+import com.licode.prodigoerp.tenant.adapter.input.rest.mapper.TenantRestMapper;
 import com.licode.prodigoerp.tenant.application.port.input.TenantEntitlementUseCase;
+import com.licode.prodigoerp.tenant.application.port.input.query.GetTenantEntitlementQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,17 +18,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TenantController {
 
-    private final TenantMapper tenantMapper;
+    private final TenantRestMapper tenantRestMapper;
     private final TenantEntitlementUseCase tenantEntitlementUseCase;
 
     @GetMapping(path = "/entitlements", version = "1.0")
-    public ResponseEntity<PublicTenantEntitlementDto> getEntitlements() {
+    public ResponseEntity<TenantEntitlementResponse> getEntitlements() {
 
         UUID tenantId = TenantContext.getCurrentTenant();
 
         return ResponseEntity.ok().body(
-                tenantMapper.toPublicTenantEntitlementDto(
-                        tenantEntitlementUseCase.findEntitlementByUuid(tenantId)
+                tenantRestMapper.toTenantEntitlementResponse(
+                        tenantEntitlementUseCase.findEntitlementByUuid(new GetTenantEntitlementQuery(tenantId))
                 )
         );
     }

@@ -3,7 +3,8 @@ package com.licode.prodigoerp.auth.application.service;
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.helpers.RolePermissionLinker;
 import com.licode.prodigoerp.auth.application.port.input.TenantRolePermissionUseCase;
-import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.query.ListRolePermissionsQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
@@ -31,10 +32,10 @@ public class TenantRolePermissionService implements TenantRolePermissionUseCase 
 
     @Override
     @Transactional(readOnly = true)
-    public List<PermissionSummaryQuery> list(UUID roleId) {
-        loadRole(roleId);
+    public List<PermissionSummaryResult> list(ListRolePermissionsQuery query) {
+        loadRole(query.roleId());
 
-        return rolePort.findPermissionsByRoleId(roleId)
+        return rolePort.findPermissionsByRoleId(query.roleId())
                 .stream().map(AuthMappings::toSummary)
                 .toList();
     }

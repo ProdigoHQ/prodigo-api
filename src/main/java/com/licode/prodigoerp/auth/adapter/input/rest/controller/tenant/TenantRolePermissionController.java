@@ -1,8 +1,9 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.tenant;
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.PermissionSummaryResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.TenantRolePermissionUseCase;
+import com.licode.prodigoerp.auth.application.port.input.query.ListRolePermissionsQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,13 @@ import java.util.UUID;
 public class TenantRolePermissionController {
 
     private final TenantRolePermissionUseCase useCase;
-    private final AuthoritiesWebMapper mapper;
+    private final AuthoritiesRestMapper mapper;
 
     @GetMapping(version = "1.0")
-    public ResponseEntity<List<PermissionSummaryDto>> list(@PathVariable UUID roleId) {
+    public ResponseEntity<List<PermissionSummaryResponse>> list(@PathVariable UUID roleId) {
 
-        return ResponseEntity.ok().body(mapper.toPermissionSummaryDtos(useCase.list(roleId)));
+        return ResponseEntity.ok().body(
+                mapper.toPermissionSummaryResponses(useCase.list(new ListRolePermissionsQuery(roleId))));
     }
 
     @PreAuthorize("hasAnyAuthority('PERM_TENANT.ROLE.ASSIGN', 'PERM_TENANT.ROLE.REVOKE')")

@@ -1,11 +1,11 @@
 package com.licode.prodigoerp.auth.application.port.input;
 
-import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.query.GetPermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface PermissionQueryUseCase {
-    PermissionSummaryQuery get(UUID permissionId);
-    List<PermissionSummaryQuery> list();           // tenant-assignable only
+    PermissionSummaryResult get(GetPermissionSummaryQuery query);
+    List<PermissionSummaryResult> list();           // tenant-assignable only
 }

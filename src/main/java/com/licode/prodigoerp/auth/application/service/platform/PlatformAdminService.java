@@ -1,11 +1,12 @@
 package com.licode.prodigoerp.auth.application.service.platform;
 
+import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.PlatformAdminQueryUseCase;
 import com.licode.prodigoerp.auth.application.port.input.RegisterPlatformAdminUseCase;
 import com.licode.prodigoerp.auth.application.port.input.internal.AccessProvisioningUseCase;
 import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
-import com.licode.prodigoerp.auth.application.port.input.query.UserSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.UserSummaryResult;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.ConflictException;
@@ -29,7 +30,7 @@ public class PlatformAdminService implements RegisterPlatformAdminUseCase, Platf
 
     @Override
     @Transactional
-    public String register(RegisterPlatformAdminCommand cmd) {
+    public String register(CreateAdminCommand cmd) {
 
         if(loadUserPort.findUserByUsername(cmd.username()).isPresent()){
             log.error("Username {} already exists", cmd.username());
@@ -57,28 +58,22 @@ public class PlatformAdminService implements RegisterPlatformAdminUseCase, Platf
         );
 
 //        UUID roleId = provisioning.ensureSuperAdminRole(author);
-        provisioning.assignRoleToUser(fetchedUser.getId(), cmd.roleId(), null, author);
+        provisioning.assignRoleToUser(new AssignRoleCommand(
+                fetchedUser.getId(),
+                cmd.roleId(),
+                null,
+                author
+        ));
 
         log.info("Super admin {} created by {}", fetchedUser.getUsername(), author);
         return "Super admin " + fetchedUser.getUsername() + " created successfully";
     }
 
     @Override
-    public List<UserSummaryQuery> get() {
+    public List<UserSummaryResult> findAllAdmins() {
 
-        return loadUserPort.findAllUsersByIsSuperAdmin(true).stream().map(
-                user -> {
-                    return new UserSummaryQuery(
-                            user.getId(),
-                            user.getUsername(),
-                            user.getEmail(),
-                            user.getFirstName(),
-                            user.getLastName(),
-                            user.getStatus(),
-                            user.getLastLogin(),
-                            user.getCreatedAt()
-                    );
-                }
-        ).toList();
+        return loadUserPort.findAllUsersByIsSuperAdmin(true).stream()
+                .map(AuthMappings::toUserSummary)
+                .toList();
     }
 }

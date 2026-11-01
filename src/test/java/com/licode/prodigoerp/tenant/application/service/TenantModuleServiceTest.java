@@ -3,8 +3,11 @@ package com.licode.prodigoerp.tenant.application.service;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
-import com.licode.prodigoerp.module.application.port.input.command.ModuleSummaryCommand;
-import com.licode.prodigoerp.module.application.port.input.command.ShowPublicModuleCommand;
+import com.licode.prodigoerp.module.application.port.input.query.GetTenantModuleDetailsQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListAvailableTenantModulesQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListTenantActiveModulesQuery;
+import com.licode.prodigoerp.module.application.port.input.result.ModuleDetailsResult;
+import com.licode.prodigoerp.module.application.port.input.result.PublicModuleResult;
 import com.licode.prodigoerp.module.domain.model.Module;
 import com.licode.prodigoerp.tenant.application.port.output.TenantModuleQueryPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +44,6 @@ class TenantModuleServiceTest {
     private final List<Module> remainingModules = new ArrayList<>();
     private Module crmModule;
     private final List<Permission> associatedFetchedPermissions = new ArrayList<>();
-//    private static final List<ShowPublicModuleCommand> allShowPublicModuleCommands =  new ArrayList<>();
 
     @BeforeEach
     void setUp(){
@@ -88,7 +90,8 @@ class TenantModuleServiceTest {
             when(tenantModuleQueryPort.findAllActiveModulesByTenantId(tenantId)).thenReturn(tenantModules);
 
             // when
-            List<ShowPublicModuleCommand> actual = tenantModuleService.findAllActiveModulesByTenantId(tenantId);
+            List<PublicModuleResult> actual = tenantModuleService.findAllActiveModulesByTenantId(
+                    new ListTenantActiveModulesQuery(tenantId));
 
             // then
             verify(tenantModuleQueryPort).findAllActiveModulesByTenantId(tenantId);
@@ -107,7 +110,8 @@ class TenantModuleServiceTest {
             // Given
             when(tenantModuleQueryPort.findAllAvailableModulesToPay(tenantId)).thenReturn(remainingModules);
 
-            List<ShowPublicModuleCommand> actual = tenantModuleService.findAllAvailableModulesToPay(tenantId);
+            List<PublicModuleResult> actual = tenantModuleService.findAllAvailableModulesToPay(
+                    new ListAvailableTenantModulesQuery(tenantId));
 
             verify(tenantModuleQueryPort).findAllAvailableModulesToPay(tenantId);
             assertEquals(remainingModules.size(), actual.size());
@@ -126,7 +130,8 @@ class TenantModuleServiceTest {
             when(tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey, tenantId)).thenReturn(Optional.of(crmModule));
             when(permissionPort.findPermissionsByModuleKey(moduleKey)).thenReturn(associatedFetchedPermissions);
 
-            ModuleSummaryCommand  actual = tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(moduleKey, tenantId);
+            ModuleDetailsResult  actual = tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(
+                    new GetTenantModuleDetailsQuery(moduleKey, tenantId));
 
             verify(tenantModuleQueryPort).findModuleByModuleKeyAndTenantId(moduleKey, tenantId);
             assertEquals(crmModule.getName(), actual.name());
@@ -140,7 +145,8 @@ class TenantModuleServiceTest {
             when(tenantModuleQueryPort.findModuleByModuleKeyAndTenantId(moduleKey, tenantId)).thenReturn(Optional.empty());
 
             NotFoundException ex = assertThrows(NotFoundException.class,
-                    () -> tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(moduleKey, tenantId));
+                    () -> tenantModuleService.findModuleWithPermissionsByKeyAndTenantId(
+                            new GetTenantModuleDetailsQuery(moduleKey, tenantId)));
 
             assertEquals("No Module Found with this module key: '" + moduleKey + "' among  your subscription", ex.getMessage());
         }

@@ -1,9 +1,9 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.CreatePlatformAdminDto;
-import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserListResponse;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthWebMapper;
-import com.licode.prodigoerp.auth.adapter.input.rest.mapper.UserWebMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.CreateAdminRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserSummaryResponse;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthRestMapper;
+import com.licode.prodigoerp.auth.adapter.input.rest.mapper.UserRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.PlatformAdminQueryUseCase;
 import com.licode.prodigoerp.auth.application.port.input.RegisterPlatformAdminUseCase;
 import jakarta.validation.Valid;
@@ -27,22 +27,22 @@ public class PlatformAdminController {
 
     private final RegisterPlatformAdminUseCase registerPlatformAdminUseCase;
     private final PlatformAdminQueryUseCase platformAdminQuery;
-    private final AuthWebMapper authWebMapper;
-    private final UserWebMapper userWebMapper;
+    private final AuthRestMapper authRestMapper;
+    private final UserRestMapper userRestMapper;
 
     @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.CREATE')")
     @PostMapping(value = "/create", version = "1.0")
-    public ResponseEntity<String> createPlatformAdmin(@Valid @RequestBody CreatePlatformAdminDto createSuperAdminDto) {
+    public ResponseEntity<String> createPlatformAdmin(@Valid @RequestBody CreateAdminRequest createAdminRequest) {
         return ResponseEntity.ok().body(
-                registerPlatformAdminUseCase.register(authWebMapper.toRegisterSuperAdminCommand(createSuperAdminDto))
+                registerPlatformAdminUseCase.register(authRestMapper.toCreateAdminCommand(createAdminRequest))
         );
     }
 
     @GetMapping(value = "/admins", version = "1.0")
-    public ResponseEntity<List<UserListResponse>> getAllPlatformAdmins(){
+    public ResponseEntity<List<UserSummaryResponse>> getAllPlatformAdmins(){
 
-        return ResponseEntity.ok().body(platformAdminQuery.get().stream().map(
-                userWebMapper::toUserListResponse
+        return ResponseEntity.ok().body(platformAdminQuery.findAllAdmins().stream().map(
+                userRestMapper::toUserSummaryResponse
         ).toList());
     }
 }

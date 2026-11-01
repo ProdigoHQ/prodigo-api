@@ -1,9 +1,12 @@
 package com.licode.prodigoerp.tenant.adapter.input.rest.controller;
 
 import com.licode.prodigoerp.common.config.TenantContext;
-import com.licode.prodigoerp.module.adapter.input.rest.dto.ModuleResponseDto;
-import com.licode.prodigoerp.module.adapter.input.rest.dto.ShowPublicModuleDto;
-import com.licode.prodigoerp.module.adapter.input.rest.mapper.ModuleWebMapper;
+import com.licode.prodigoerp.module.adapter.input.rest.dto.response.ModuleDetailsResponse;
+import com.licode.prodigoerp.module.adapter.input.rest.dto.response.PublicModuleResponse;
+import com.licode.prodigoerp.module.adapter.input.rest.mapper.ModuleRestMapper;
+import com.licode.prodigoerp.module.application.port.input.query.GetTenantModuleDetailsQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListAvailableTenantModulesQuery;
+import com.licode.prodigoerp.module.application.port.input.query.ListTenantActiveModulesQuery;
 import com.licode.prodigoerp.tenant.application.port.input.TenantModuleUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,43 +24,44 @@ import java.util.UUID;
 public class TenantModuleController {
 
     private final TenantModuleUseCase  tenantModuleUseCase;
-    private final ModuleWebMapper  moduleWebMapper;
+    private final ModuleRestMapper  moduleRestMapper;
 
     @GetMapping(path = "/" , version = "1.0")
-    public ResponseEntity<List<ShowPublicModuleDto>> getAllTenantActiveModules(){
+    public ResponseEntity<List<PublicModuleResponse>> getAllTenantActiveModules(){
         UUID currentTenantId = TenantContext.getCurrentTenant();
 
         return ResponseEntity.ok().body(
-                tenantModuleUseCase.findAllActiveModulesByTenantId(currentTenantId)
+                tenantModuleUseCase.findAllActiveModulesByTenantId(new ListTenantActiveModulesQuery(currentTenantId))
                         .stream().map(
-                                moduleWebMapper::toShowPublicModuleDto
+                                moduleRestMapper::toPublicModuleResponse
                         ).toList()
         );
     }
 
     // this endpoint get all available modules that the current Tenant doesn't have
     @GetMapping(path = "/available", version = "1.0")
-    public ResponseEntity<List<ShowPublicModuleDto>> getAllAvailableModules(){
+    public ResponseEntity<List<PublicModuleResponse>> getAllAvailableModules(){
 
         UUID currentTenantId = TenantContext.getCurrentTenant();
 
         return ResponseEntity.ok().body(
-                tenantModuleUseCase.findAllAvailableModulesToPay(currentTenantId)
+                tenantModuleUseCase.findAllAvailableModulesToPay(new ListAvailableTenantModulesQuery(currentTenantId))
                         .stream().map(
-                                moduleWebMapper::toShowPublicModuleDto
+                                moduleRestMapper::toPublicModuleResponse
                         ).toList()
         );
     }
 
     // get the module details infos with its permissions
     @GetMapping(path = "/{moduleKey}", version = "1.0")
-    public ResponseEntity<ModuleResponseDto> getModule(@PathVariable String moduleKey){
+    public ResponseEntity<ModuleDetailsResponse> getModule(@PathVariable String moduleKey){
 
         UUID currentTenantId = TenantContext.getCurrentTenant();
 
         return ResponseEntity.ok().body(
-                moduleWebMapper.toModuleResponseDto(
-                        tenantModuleUseCase.findModuleWithPermissionsByKeyAndTenantId(moduleKey, currentTenantId))
+                moduleRestMapper.toModuleDetailsResponse(
+                        tenantModuleUseCase.findModuleWithPermissionsByKeyAndTenantId(
+                                new GetTenantModuleDetailsQuery(moduleKey, currentTenantId)))
         );
     }
 

@@ -1,7 +1,7 @@
 package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.port.input.RefreshTokenUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.RefreshResponseCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.RefreshTokenResult;
 import com.licode.prodigoerp.auth.application.port.output.RefreshTokenStorePort;
 import com.licode.prodigoerp.auth.application.port.output.TokenGeneratorPort;
 import com.licode.prodigoerp.auth.domain.model.RefreshToken;
@@ -34,7 +34,7 @@ public class AuthService implements RefreshTokenUseCase {
     // leading to no generation of the new access token
     @Override
     @Transactional
-    public RefreshResponseCommand refreshToken(String refreshToken) {
+    public RefreshTokenResult refreshToken(String refreshToken) {
 
         Optional<RefreshToken> fetchedRefreshTokenObj = refreshTokenStorePort.findRefreshTokenByTokenString(refreshToken);
 
@@ -66,7 +66,7 @@ public class AuthService implements RefreshTokenUseCase {
       String newAccessToken = tokenGeneratorPort.generateAccessToken(user);
 
       log.info("New access token generated for the user with id: {}", user.getId());
-      return new RefreshResponseCommand(
+      return new RefreshTokenResult(
               newAccessToken,
               newRefreshToken.getToken()
       );
