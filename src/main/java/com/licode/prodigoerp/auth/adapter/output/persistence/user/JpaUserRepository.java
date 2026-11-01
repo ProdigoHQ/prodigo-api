@@ -3,6 +3,7 @@ package com.licode.prodigoerp.auth.adapter.output.persistence.user;
 import com.licode.prodigoerp.tenant.adapter.output.persistence.Tenant.TenantJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,6 @@ public interface JpaUserRepository extends JpaRepository<UserJpaEntity, UUID> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     Optional<UserJpaEntity> findByIdAndTenant_Id(UUID id, UUID tenantId);
+
+    List<UserJpaEntity> findAllByIsSuperAdmin(boolean isSuperAdmin);
 }

@@ -1,8 +1,8 @@
-package com.licode.prodigoerp.auth.application.port.input.command;
+package com.licode.prodigoerp.auth.application.port.input.query;
 
 import java.util.UUID;
 
-public record PermissionSummaryCommand(
+public record PermissionSummaryQuery(
         UUID id,
         String code,
         String description,

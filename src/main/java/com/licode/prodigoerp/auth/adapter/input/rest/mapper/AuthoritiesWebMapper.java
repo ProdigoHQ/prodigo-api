@@ -2,6 +2,8 @@ package com.licode.prodigoerp.auth.adapter.input.rest.mapper;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.*;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import org.mapstruct.Mapper;
 
 import java.util.List;
@@ -13,8 +15,8 @@ public interface AuthoritiesWebMapper {
     UpdatePermissionCommand toUpdatePermissionCommand(UpdatePermissionDto updatePermissionDto);
     SaveRoleCommand toSaveRoleCommand(SaveRoleDto saveRoleDto);
 
-    PermissionSummaryDto toPermissionSummaryDto(PermissionSummaryCommand permissionSummaryCommand);
-    List<PermissionSummaryDto> toPermissionSummaryDtos(List<PermissionSummaryCommand> permissionSummaryCommands);
-    RoleSummaryDto toRoleSummaryDto(RoleSummaryCommand roleSummaryCommand);
-    List<RoleSummaryDto> toRoleSummaryDtos(List<RoleSummaryCommand> roleSummaryCommands);
+    PermissionSummaryDto toPermissionSummaryDto(PermissionSummaryQuery permissionSummaryQuery);
+    List<PermissionSummaryDto> toPermissionSummaryDtos(List<PermissionSummaryQuery> permissionSummaryQueries);
+    RoleSummaryDto toRoleSummaryDto(RoleDetailsResult roleDetailsResult);
+    List<RoleSummaryDto> toRoleSummaryDtos(List<RoleDetailsResult> roleDetailsResults);
 }

@@ -2,7 +2,7 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.PermissionQueryUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
@@ -23,7 +23,7 @@ public class PermissionQueryService implements PermissionQueryUseCase {
     private final PermissionPersistencePort permissionPort;
 
     @Override
-    public PermissionSummaryCommand get(UUID permissionId) {
+    public PermissionSummaryQuery get(UUID permissionId) {
         return permissionPort.findById(permissionId)
                 .filter(Permission::isTenantAssignable) // just the Tenant's permission
                 .map(AuthMappings::toSummary)
@@ -32,7 +32,7 @@ public class PermissionQueryService implements PermissionQueryUseCase {
     }
 
     @Override
-    public List<PermissionSummaryCommand> list() {
+    public List<PermissionSummaryQuery> list() {
         return permissionPort.findAllTenantAssignable()
                 .stream().map(AuthMappings::toSummary)
                 .toList();

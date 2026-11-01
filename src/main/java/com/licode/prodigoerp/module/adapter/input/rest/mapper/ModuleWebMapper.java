@@ -3,7 +3,7 @@ package com.licode.prodigoerp.module.adapter.input.rest.mapper;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.CreatePermissionDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
 import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 import com.licode.prodigoerp.module.adapter.input.rest.dto.ModuleResponseDto;
 import com.licode.prodigoerp.module.adapter.input.rest.dto.RegisterModuleDto;
 import com.licode.prodigoerp.module.adapter.input.rest.dto.ShowPublicModuleDto;
@@ -20,5 +20,5 @@ public interface ModuleWebMapper {
     CreatePermissionDto toCreatePermissionDto(CreatePermissionCommand createPermissionCommand);
     CreatePermissionCommand toCreatePermissionCommand(CreatePermissionDto createPermissionDto);
     ModuleResponseDto toModuleResponseDto(ModuleSummaryCommand moduleSummaryCommand);
-    PermissionSummaryDto toPermissionSummaryDto(PermissionSummaryCommand permissionSummaryCommand);
+    PermissionSummaryDto toPermissionSummaryDto(PermissionSummaryQuery permissionSummaryQuery);
 }

@@ -2,7 +2,7 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.TenantRoleUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.RoleSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import com.licode.prodigoerp.auth.application.port.input.command.SaveRoleCommand;
 import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Role;
@@ -30,7 +30,7 @@ public class TenantRoleService implements TenantRoleUseCase {
     private final CurrentUserPort currentUserPort;
 
     @Override
-    public RoleSummaryCommand create(SaveRoleCommand command) {
+    public RoleDetailsResult create(SaveRoleCommand command) {
         UUID tenantId = currentUserPort.requireTenantId();
         String name = command.name().trim();
 
@@ -56,7 +56,7 @@ public class TenantRoleService implements TenantRoleUseCase {
     }
 
     @Override
-    public RoleSummaryCommand update(UUID roleId, SaveRoleCommand command) {
+    public RoleDetailsResult update(UUID roleId, SaveRoleCommand command) {
         UUID tenantId = currentUserPort.requireTenantId();
         Role role = load(roleId, tenantId);
         String name = command.name().trim();
@@ -77,7 +77,7 @@ public class TenantRoleService implements TenantRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleSummaryCommand get(UUID roleId) {
+    public RoleDetailsResult get(UUID roleId) {
         Role role = load(roleId, currentUserPort.requireTenantId());
 
         return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(roleId));
@@ -85,7 +85,7 @@ public class TenantRoleService implements TenantRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleSummaryCommand> list() {
+    public List<RoleDetailsResult> list() {
         return rolePort.findByTenantId(currentUserPort.requireTenantId())
                 .stream().map(r -> AuthMappings.toSummary(r, List.of()))
                 .toList();

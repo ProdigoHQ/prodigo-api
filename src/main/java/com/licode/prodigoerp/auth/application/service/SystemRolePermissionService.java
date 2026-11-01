@@ -3,7 +3,7 @@ package com.licode.prodigoerp.auth.application.service;
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.helpers.RolePermissionLinker;
 import com.licode.prodigoerp.auth.application.port.input.SystemRolePermissionUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
@@ -31,7 +31,7 @@ public class SystemRolePermissionService implements SystemRolePermissionUseCase 
 
     @Override
     @Transactional(readOnly = true)
-    public List<PermissionSummaryCommand> list(UUID roleId) {
+    public List<PermissionSummaryQuery> list(UUID roleId) {
         loadRole(roleId);
 
         return rolePort.findPermissionsByRoleId(roleId)

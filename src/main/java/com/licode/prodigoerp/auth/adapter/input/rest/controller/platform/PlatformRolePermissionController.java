@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/s/admin/roles/{roleId}/permissions")
+@PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.ASSIGN', 'PERM_ERP.PERMISSION.REVOKE')")
 @RequiredArgsConstructor
 public class PlatformRolePermissionController {
 
@@ -25,7 +26,6 @@ public class PlatformRolePermissionController {
         return ResponseEntity.ok().body(mapper.toPermissionSummaryDtos(useCase.list(roleId)));
     }
 
-    @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.CREATE', 'PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.DELETE')")
     @PostMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> assign(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
 
@@ -34,7 +34,6 @@ public class PlatformRolePermissionController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.CREATE', 'PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.DELETE')")
     @DeleteMapping(value = "/{permissionId}", version = "1.0")
     public ResponseEntity<Void> remove(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
         useCase.remove(roleId, permissionId);

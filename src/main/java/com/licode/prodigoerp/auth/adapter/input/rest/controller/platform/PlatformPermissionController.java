@@ -5,7 +5,7 @@ import com.licode.prodigoerp.auth.adapter.input.rest.dto.PermissionSummaryDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.UpdatePermissionDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
 import com.licode.prodigoerp.auth.application.port.input.PermissionCatalogUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,7 +38,7 @@ public class PlatformPermissionController {
     @PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.CREATE','PERM_ERP.PERMISSION.UPDATE')")
     @PostMapping(version = "1.0")
     public ResponseEntity<PermissionSummaryDto> create(@Valid @RequestBody CreatePermissionDto dto){
-        PermissionSummaryCommand created = useCase.create(mapper.toCreatePermissionCommand(dto));
+        PermissionSummaryQuery created = useCase.create(mapper.toCreatePermissionCommand(dto));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toPermissionSummaryDto(created));
     }

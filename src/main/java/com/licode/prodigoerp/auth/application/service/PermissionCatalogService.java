@@ -3,7 +3,7 @@ package com.licode.prodigoerp.auth.application.service;
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.PermissionCatalogUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 import com.licode.prodigoerp.auth.application.port.input.command.UpdatePermissionCommand;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
@@ -32,7 +32,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
     private final CurrentUserPort currentUser;
 
     @Override
-    public PermissionSummaryCommand create(CreatePermissionCommand cmd) {
+    public PermissionSummaryQuery create(CreatePermissionCommand cmd) {
         Module module = null;
         String code;
 
@@ -80,7 +80,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
     }
 
     @Override
-    public PermissionSummaryCommand update(UUID permissionId, UpdatePermissionCommand command) {
+    public PermissionSummaryQuery update(UUID permissionId, UpdatePermissionCommand command) {
         Permission p = load(permissionId);
 
         p.setDescription(command.description());
@@ -92,7 +92,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public PermissionSummaryCommand getPermissionById(UUID permissionId) {
+    public PermissionSummaryQuery getPermissionById(UUID permissionId) {
         return AuthMappings.toSummary(load(permissionId));
     }
 
@@ -115,7 +115,7 @@ public class PermissionCatalogService implements PermissionCatalogUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PermissionSummaryCommand> listPermissions() {
+    public List<PermissionSummaryQuery> listPermissions() {
 
         return permissionPort.findAll().stream()
                 .map(AuthMappings::toSummary).toList();

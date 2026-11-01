@@ -2,7 +2,7 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.SystemRoleUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.RoleSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import com.licode.prodigoerp.auth.application.port.input.command.SaveRoleCommand;
 import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Role;
@@ -28,7 +28,7 @@ public class SystemRoleService implements SystemRoleUseCase {
     private final RolePersistencePort rolePort;
 
     @Override
-    public RoleSummaryCommand create(SaveRoleCommand cmd) {
+    public RoleDetailsResult create(SaveRoleCommand cmd) {
         String name = cmd.name().trim();
         if(rolePort.systemRoleNameExists(name)) {
             throw new ConflictException("System role " + name + " already exists");
@@ -45,7 +45,7 @@ public class SystemRoleService implements SystemRoleUseCase {
     }
 
     @Override
-    public RoleSummaryCommand update(UUID roleId, SaveRoleCommand command) {
+    public RoleDetailsResult update(UUID roleId, SaveRoleCommand command) {
         Role role = loadSystemRole(roleId);
 
         String name = command.name().trim();
@@ -65,7 +65,7 @@ public class SystemRoleService implements SystemRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleSummaryCommand get(UUID roleId) {
+    public RoleDetailsResult get(UUID roleId) {
         Role role = loadSystemRole(roleId);
 
         return AuthMappings.toSummary(role, rolePort.findPermissionsByRoleId(roleId));
@@ -73,7 +73,7 @@ public class SystemRoleService implements SystemRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleSummaryCommand> list() {
+    public List<RoleDetailsResult> list() {
         return rolePort.findSystemRoles().stream()
                 .map(r -> AuthMappings.toSummary(r, List.of()))
                 .toList();
@@ -93,7 +93,7 @@ public class SystemRoleService implements SystemRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleSummaryCommand> listTenantRoles(UUID tenantId) {
+    public List<RoleDetailsResult> listTenantRoles(UUID tenantId) {
         return rolePort.findByTenantId(tenantId).stream()
                 .map(r -> AuthMappings.toSummary(r, List.of()))
                 .toList();
@@ -101,7 +101,7 @@ public class SystemRoleService implements SystemRoleUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleSummaryCommand getTenantRole(UUID tenantId, UUID roleId) {
+    public RoleDetailsResult getTenantRole(UUID tenantId, UUID roleId) {
         Role role = rolePort.findTenantRole(roleId, tenantId)
                 .orElseThrow(() -> new NotFoundException("Role not found with id: " + roleId));
 

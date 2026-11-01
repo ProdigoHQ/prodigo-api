@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.module.application.port.input.command;
 
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,6 +14,6 @@ public record ModuleSummaryCommand(
         BigDecimal price,
         String currency,
         Boolean isActive,
-        List<PermissionSummaryCommand> permissions
+        List<PermissionSummaryQuery> permissions
 ) {
 }

@@ -4,7 +4,7 @@ import com.licode.prodigoerp.auth.adapter.input.rest.dto.RoleSummaryDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.SaveRoleDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
 import com.licode.prodigoerp.auth.application.port.input.SystemRoleUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.RoleSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,7 +40,7 @@ public class PlatformRoleController {
     @PreAuthorize("hasAnyAuthority('PERM_ERP.ROLE.CREATE','PERM_ERP.ROLE.UPDATE')")
     @PostMapping(value = "/roles", version = "1.0")
     public ResponseEntity<RoleSummaryDto> create(@Valid @RequestBody SaveRoleDto dto){
-        RoleSummaryCommand created = useCase.create(mapper.toSaveRoleCommand(dto));
+        RoleDetailsResult created = useCase.create(mapper.toSaveRoleCommand(dto));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toRoleSummaryDto(created));
     }

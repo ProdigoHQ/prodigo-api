@@ -4,7 +4,7 @@ import com.licode.prodigoerp.auth.adapter.input.rest.dto.RoleSummaryDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.SaveRoleDto;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesWebMapper;
 import com.licode.prodigoerp.auth.application.port.input.TenantRoleUseCase;
-import com.licode.prodigoerp.auth.application.port.input.command.RoleSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,7 +39,7 @@ public class TenantRoleController {
     @PreAuthorize("hasAnyAuthority('PERM_TENANT.ROLE.CREATE', 'PERM_TENANT.ROLE.UPDATE')")
     @PostMapping(version = "1.0")
     public ResponseEntity<RoleSummaryDto> create(@Valid @RequestBody SaveRoleDto dto){
-        RoleSummaryCommand created = useCase.create(mapper.toSaveRoleCommand(dto));
+        RoleDetailsResult created = useCase.create(mapper.toSaveRoleCommand(dto));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toRoleSummaryDto(created));
     }
@@ -47,7 +47,7 @@ public class TenantRoleController {
     @PreAuthorize("hasAnyAuthority('PERM_TENANT.ROLE.CREATE', 'PERM_TENANT.ROLE.UPDATE')")
     @PutMapping(value = "/{roleId}", version = "1.0")
     public ResponseEntity<RoleSummaryDto> update(@PathVariable UUID roleId, @Valid @RequestBody SaveRoleDto dto){
-        RoleSummaryCommand updated = useCase.update(roleId, mapper.toSaveRoleCommand(dto));
+        RoleDetailsResult updated = useCase.update(roleId, mapper.toSaveRoleCommand(dto));
 
         return ResponseEntity.ok().body(mapper.toRoleSummaryDto(updated));
     }

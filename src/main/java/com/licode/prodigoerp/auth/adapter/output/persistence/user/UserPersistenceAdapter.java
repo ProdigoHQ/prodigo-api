@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,6 +37,13 @@ public class UserPersistenceAdapter implements SaveUserPort, LoadUserPort {
     @Override
     public Optional<User> findUserByIdAndTenantId(UUID id, UUID tenantId) {
         return jpaUserRepository.findByIdAndTenant_Id(id, tenantId).map(UserJpaMapper::toDomainModel);
+    }
+
+    @Override
+    public List<User> findAllUsersByIsSuperAdmin(boolean isSuperAdmin) {
+        return jpaUserRepository.findAllByIsSuperAdmin(isSuperAdmin).stream().map(
+                UserJpaMapper::toDomainModel
+        ).toList();
     }
 
     @Override

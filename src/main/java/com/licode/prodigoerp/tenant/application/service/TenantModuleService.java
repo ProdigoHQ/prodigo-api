@@ -1,6 +1,6 @@
 package com.licode.prodigoerp.tenant.application.service;
 
-import com.licode.prodigoerp.auth.application.port.input.command.PermissionSummaryCommand;
+import com.licode.prodigoerp.auth.application.port.input.query.PermissionSummaryQuery;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.common.exception.NotFoundException;
@@ -70,8 +70,8 @@ public class TenantModuleService implements TenantModuleUseCase {
 
         List<Permission> associatedFetchedPermissions = permissionPersistencePort.findPermissionsByModuleKey(moduleKey.toUpperCase());
 
-        List<PermissionSummaryCommand> showPermissions = associatedFetchedPermissions.stream()
-                .map(permission -> new PermissionSummaryCommand(
+        List<PermissionSummaryQuery> showPermissions = associatedFetchedPermissions.stream()
+                .map(permission -> new PermissionSummaryQuery(
                         permission.getId(),
                         permission.getCode(),
                         permission.getDescription(),
