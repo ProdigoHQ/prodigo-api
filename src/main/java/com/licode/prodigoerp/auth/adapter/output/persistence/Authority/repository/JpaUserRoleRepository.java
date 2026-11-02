@@ -1,11 +1,13 @@
 package com.licode.prodigoerp.auth.adapter.output.persistence.Authority.repository;
 
+import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.entity.RoleJpaEntity;
 import com.licode.prodigoerp.auth.adapter.output.persistence.Authority.entity.UserRoleJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface JpaUserRoleRepository extends JpaRepository<UserRoleJpaEntity, UUID> {
@@ -30,4 +32,11 @@ public interface JpaUserRoleRepository extends JpaRepository<UserRoleJpaEntity, 
     boolean existsByRoleJpaEntity_Id(UUID roleId);
 
     boolean existsByUserJpaEntity_IdAndRoleJpaEntity_IdAndTenantId(UUID userId, UUID roleId, UUID tenantId);
+
+    @Query("""
+        SELECT ur.roleJpaEntity FROM UserRoleJpaEntity ur JOIN ur.roleJpaEntity r
+        ON ur.roleJpaEntity.id = r.id
+        WHERE ur.userJpaEntity.id = :userId
+        """)
+    Optional<RoleJpaEntity> findByUserJpaEntity_Id(UUID userId);
 }

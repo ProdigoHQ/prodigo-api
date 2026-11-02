@@ -2,6 +2,7 @@ package com.licode.prodigoerp.auth.application.helpers;
 
 import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 import com.licode.prodigoerp.auth.application.port.input.result.RoleDetailsResult;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleSummaryResult;
 import com.licode.prodigoerp.auth.application.port.input.result.UserSummaryResult;
 import com.licode.prodigoerp.auth.domain.model.Permission;
 import com.licode.prodigoerp.auth.domain.model.Role;
@@ -15,6 +16,10 @@ public class AuthMappings {
     public static PermissionSummaryResult toSummary(Permission p) {
         return new PermissionSummaryResult(p.getId(), p.getCode(), p.getDescription(),
                 p.getAction(), p.getResource());
+    }
+
+    public static RoleSummaryResult toSummary(Role r) {
+        return new RoleSummaryResult(r.getId(), r.getName(), r.getDescription(), r.getCreatedAt());
     }
 
     public static RoleDetailsResult toSummary(Role r, List<Permission> permissions) {

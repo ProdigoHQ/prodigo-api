@@ -3,6 +3,7 @@ package com.licode.prodigoerp.auth.application.service;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
 import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
+import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
 import com.licode.prodigoerp.auth.application.service.platform.PlatformAdminService;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.ConflictException;
@@ -29,6 +30,7 @@ class PlatformAdminServiceTest {
     @Mock private AccessProvisioningService provisioningService;
     @Mock private CurrentUserPort currentUser;
     @Mock private SaveUserUseCase saveUser;
+    @Mock private RolePersistencePort rolePort;
 
     private PlatformAdminService platformAdminService;
 
@@ -47,7 +49,8 @@ class PlatformAdminServiceTest {
                 loadUserPort,
                 saveUser,
                 provisioningService,
-                currentUser
+                currentUser,
+                rolePort
         );
 
         createAdminCommand = new CreateAdminCommand(
@@ -139,6 +142,13 @@ class PlatformAdminServiceTest {
 
             assertEquals("Email already exists,  please try another email", ex.getMessage());
         }
+
+    }
+
+    @Nested
+    @DisplayName("Testing the Login of a superAdmin")
+    class LoginTests {
+
 
     }
 

@@ -15,6 +15,7 @@ public interface RolePersistencePort {
 
     Optional<Role> findSystemRole(UUID roleId); // tenant IS NULL
     Optional<Role> findTenantRole(UUID roleId, UUID tenantId);
+    Optional<Role> findRoleByUserId(UUID userId);
 
     List<Role> findSystemRoles();
     List<Role> findByTenantId(UUID tenantId);

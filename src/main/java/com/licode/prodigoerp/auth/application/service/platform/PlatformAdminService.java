@@ -6,17 +6,25 @@ import com.licode.prodigoerp.auth.application.port.input.RegisterPlatformAdminUs
 import com.licode.prodigoerp.auth.application.port.input.internal.AccessProvisioningUseCase;
 import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCase;
 import com.licode.prodigoerp.auth.application.port.input.command.*;
+import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
+import com.licode.prodigoerp.auth.application.port.input.result.RoleSummaryResult;
+import com.licode.prodigoerp.auth.application.port.input.result.UserDetailsResult;
 import com.licode.prodigoerp.auth.application.port.input.result.UserSummaryResult;
 import com.licode.prodigoerp.auth.application.port.output.LoadUserPort;
+import com.licode.prodigoerp.auth.application.port.output.RolePersistencePort;
+import com.licode.prodigoerp.auth.domain.model.Role;
 import com.licode.prodigoerp.auth.domain.model.User;
 import com.licode.prodigoerp.common.exception.ConflictException;
+import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.common.shared.application.output.CurrentUserPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -27,6 +35,7 @@ public class PlatformAdminService implements RegisterPlatformAdminUseCase, Platf
     private final SaveUserUseCase saveUserUseCase;
     private final AccessProvisioningUseCase provisioning;
     private final CurrentUserPort currentUser;
+    private final RolePersistencePort rolePort;
 
     @Override
     @Transactional
@@ -75,5 +84,44 @@ public class PlatformAdminService implements RegisterPlatformAdminUseCase, Platf
         return loadUserPort.findAllUsersByIsSuperAdmin(true).stream()
                 .map(AuthMappings::toUserSummary)
                 .toList();
+    }
+
+    @Override
+    public UserDetailsResult findUserById(UUID id) {
+        User fetchedAdmin =  loadUserPort.findUserById(id).orElseThrow(() -> new NotFoundException("No admin found with this id: " + id));
+
+        // fetching for the role associated to the user
+        Role fetchedRole = rolePort.findRoleByUserId(id).orElseThrow(() -> new NotFoundException("No Admin role assigned to the user with id: " + id));
+
+        // fetch for the user's permissions 1:n
+        List<PermissionSummaryResult> permissions = rolePort.findPermissionsByRoleId(fetchedRole.getId())
+                .stream().map(AuthMappings::toSummary)
+                .toList();
+
+        List<RoleSummaryResult> roles = new ArrayList<>();
+        roles.add(
+                AuthMappings.toSummary(fetchedRole)
+        );
+
+
+        return new  UserDetailsResult(
+                fetchedAdmin.getId(),
+                fetchedAdmin.getUsername(),
+                fetchedAdmin.getEmail(),
+                fetchedAdmin.getFirstName(),
+                fetchedAdmin.getLastName(),
+                fetchedAdmin.getStatus(),
+                fetchedAdmin.getLastLogin(),
+                fetchedAdmin.getCreatedAt(),
+                fetchedAdmin.getCreatedBy(),
+                roles,
+                permissions
+        );
+    }
+
+    /// helper functions
+    private Role loadSystemRole(UUID roleId) {
+        return rolePort.findSystemRole(roleId)
+                .orElseThrow(() -> new NotFoundException("Role not found with id: " + roleId));
     }
 }

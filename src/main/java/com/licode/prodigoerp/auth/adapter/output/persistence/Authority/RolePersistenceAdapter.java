@@ -58,6 +58,11 @@ public class RolePersistenceAdapter implements RolePersistencePort {
     }
 
     @Override
+    public Optional<Role> findRoleByUserId(UUID userId) {
+        return jpaUserRoleRepository.findByUserJpaEntity_Id(userId).map(RoleJpaMapper::toDomainModel);
+    }
+
+    @Override
     public List<Role> findSystemRoles() {
         return jpaRoleRepository.findAllByTenantJpaEntityNullOrderByNameAsc()
                 .stream().map(RoleJpaMapper::toDomainModel)

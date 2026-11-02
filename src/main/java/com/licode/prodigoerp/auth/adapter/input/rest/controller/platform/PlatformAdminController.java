@@ -1,6 +1,7 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.CreateAdminRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserDetailsResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserSummaryResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthRestMapper;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.UserRestMapper;
@@ -8,11 +9,13 @@ import com.licode.prodigoerp.auth.application.port.input.PlatformAdminQueryUseCa
 import com.licode.prodigoerp.auth.application.port.input.RegisterPlatformAdminUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 // NOTE: when the authorities are being build, the prefix "ROLE_" is added to the roles
 // And the prefix "PERM_" for the permissions
@@ -33,7 +36,7 @@ public class PlatformAdminController {
     @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.CREATE')")
     @PostMapping(value = "/create", version = "1.0")
     public ResponseEntity<String> createPlatformAdmin(@Valid @RequestBody CreateAdminRequest createAdminRequest) {
-        return ResponseEntity.ok().body(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 registerPlatformAdminUseCase.register(authRestMapper.toCreateAdminCommand(createAdminRequest))
         );
     }
@@ -44,5 +47,11 @@ public class PlatformAdminController {
         return ResponseEntity.ok().body(platformAdminQuery.findAllAdmins().stream().map(
                 userRestMapper::toUserSummaryResponse
         ).toList());
+    }
+
+    @GetMapping(value = "/admins/{adminId}", version = "1.0")
+    public ResponseEntity<UserDetailsResponse> getPlatformAdmin(@PathVariable UUID adminId){
+
+        return ResponseEntity.ok().body(userRestMapper.toUserDetailsResponse(platformAdminQuery.findUserById(adminId)));
     }
 }
