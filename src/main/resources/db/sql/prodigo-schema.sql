@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     "last_name" VARCHAR(150) NOT NULL,
     "status" VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     "is_super_admin" BOOLEAN NOT NULL DEFAULT false,
-    "last_login" TIMESTAMP NOT NULL,
+    "last_login" TIMESTAMP,
     "created_at" TIMESTAMP NOT NULL default current_timestamp,
     "updated_at" TIMESTAMP NOT NULL,
     "created_by" VARCHAR(100) NOT NULL,
@@ -233,3 +233,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_roles_system_name
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_roles_tenant_name
     ON roles (tenant_id, name) WHERE tenant_id IS NOT NULL;
+
+ALTER TABLE "tenants"
+    ADD CONSTRAINT chk_tenants_status
+        CHECK ("status" IN ('PENDING', 'ACTIVE', 'SUSPENDED', 'DEACTIVATED'));
+
+ALTER TABLE "users"
+    ADD CONSTRAINT chk_users_status
+        CHECK ("status" IN ('PENDING', 'ACTIVE', 'SUSPENDED', 'DEACTIVATED', 'LOCKED'));
+
+ALTER TABLE "module_subscriptions"
+    ADD CONSTRAINT chk_module_subscriptions_status
+        CHECK ("status" IN ('PENDING', 'TRIALING', 'ACTIVE', 'PAST_DUE', 'SUSPENDED', 'CANCELLED', 'EXPIRED'));
