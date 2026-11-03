@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -74,8 +75,19 @@ public class PlatformAdminService implements RegisterPlatformAdminUseCase, Platf
                 author
         ));
 
-        log.info("Super admin {} created by {}", fetchedUser.getUsername(), author);
-        return "Super admin " + fetchedUser.getUsername() + " created successfully";
+        log.info("New platform admin {} created by {}", fetchedUser.getUsername(), author);
+        return "Platform admin " + fetchedUser.getUsername() + " created successfully";
+    }
+
+    @Override
+    @Transactional
+    public String update(UUID adminId, UpdatedUserCommand command) {
+        User fetchedAdmin =  loadUserPort.findUserById(adminId).orElseThrow(() -> new NotFoundException("No admin found with this id: " + adminId));
+        String currentAuthor = currentUser.username();
+
+        User updatedUser = saveUserUseCase.update(command, fetchedAdmin, currentAuthor);
+
+        return "Platform admin with  id " + fetchedAdmin.getId() + " updated successfully";
     }
 
     @Override
@@ -117,11 +129,5 @@ public class PlatformAdminService implements RegisterPlatformAdminUseCase, Platf
                 roles,
                 permissions
         );
-    }
-
-    /// helper functions
-    private Role loadSystemRole(UUID roleId) {
-        return rolePort.findSystemRole(roleId)
-                .orElseThrow(() -> new NotFoundException("Role not found with id: " + roleId));
     }
 }

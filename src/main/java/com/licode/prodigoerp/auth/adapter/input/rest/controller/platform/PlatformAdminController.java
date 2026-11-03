@@ -1,6 +1,7 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.CreateAdminRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.UpdateUserRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserDetailsResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserSummaryResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthRestMapper;
@@ -41,7 +42,7 @@ public class PlatformAdminController {
         );
     }
 
-    @GetMapping(value = "/admins", version = "1.0")
+    @GetMapping(value = "/", version = "1.0")
     public ResponseEntity<List<UserSummaryResponse>> getAllPlatformAdmins(){
 
         return ResponseEntity.ok().body(platformAdminQuery.findAllAdmins().stream().map(
@@ -49,9 +50,18 @@ public class PlatformAdminController {
         ).toList());
     }
 
-    @GetMapping(value = "/admins/{adminId}", version = "1.0")
+    @GetMapping(value = "/{adminId}", version = "1.0")
     public ResponseEntity<UserDetailsResponse> getPlatformAdmin(@PathVariable UUID adminId){
 
         return ResponseEntity.ok().body(userRestMapper.toUserDetailsResponse(platformAdminQuery.findUserById(adminId)));
+    }
+
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.CREATE')")
+    @PutMapping(value = "/{adminId}", version = "1.0")
+    public ResponseEntity<String> updatePlatformAdmin(@PathVariable UUID adminId, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                registerPlatformAdminUseCase.update(adminId, userRestMapper.toUpdatedUserCommand(updateUserRequest))
+        );
     }
 }
