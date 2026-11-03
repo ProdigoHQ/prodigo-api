@@ -1,7 +1,8 @@
 # Prodigo API — Reference
 
 > Full API documentation for **Prodigo API** (this repository's backend).
-> See the project [`README`](../README.md) for setup, architecture and configuration.
+> Part of the Prodigo ERP documentation. See the [documentation index](./README.md)
+> for setup, architecture and configuration guides.
 
 Base URL: `http://localhost:8080`. Unless stated otherwise, paths below target
 `version = 1.0`. Endpoints marked 🔓 are public; the rest require
@@ -46,8 +47,9 @@ Protected endpoints require:
 Authorization: Bearer <access_token>
 ```
 
-Public endpoints: `/api/1.0/auth/register`, `/auth/login`, `/auth/refresh`,
-`/auth/logout`, `/api/1.0/modules/public`, `/api-docs`, `/swagger-ui/**`.
+Public endpoints: `/api/1.0/auth/register`, `/api/1.0/auth/login`,
+`/api/1.0/auth/refresh`, `/api/1.0/auth/logout`, `/api/1.0/modules/public`, `/api-docs`,
+`/swagger-ui/**`.
 
 ### Error format
 
@@ -88,13 +90,17 @@ Status → `errorCode` mapping:
 | Status | errorCode              | Raised for                                        |
 | -----: | ---------------------- | ------------------------------------------------- |
 | 400    | `VALIDATION_ERROR`     | Bean validation failures                          |
-| 400    | `BAD_REQUEST`          | `BadRequestException`                             |
+| 400    | `BAD_REQUEST`          | `BadRequestException`; malformed body / invalid enum value |
 | 401    | `INVALID_CREDENTIALS`  | Bad username/password                             |
 | 401    | `UNAUTHORIZED`         | Invalid/expired JWT, missing refresh cookie       |
-| 403    | `ACCESS_DENIED`        | `AccessDeniedException`, `ForbiddenException`     |
+| 403    | `ACCESS_DENIED`        | `AccessDeniedException` (including tenant not `ACTIVE`) |
 | 404    | `RESOURCE_NOT_FOUND`   | `NotFoundException`, unknown user/resource        |
-| 409    | `CONFLICT`             | Duplicate username / email / slug                 |
+| 409    | `CONFLICT`             | Duplicate username / email / slug / role / module |
 | 500    | `INTERNAL_SERVER_ERROR`| Unexpected error                                  |
+
+> ⚠️ `ForbiddenException` is declared on the 403 handler, but the handler method parameter
+> is typed `AccessDeniedException`. A thrown `ForbiddenException` can therefore fall
+> through to the generic 500 handler. See [Known gaps](./ROADMAP.md#known-gaps).
 
 ---
 
@@ -102,7 +108,7 @@ Status → `errorCode` mapping:
 
 | Method | Path       | Access | Description                                         |
 | ------ | ---------- | ------ | --------------------------------------------------- |
-| POST   | `/register`| 🔓     | Register a company + owner user (tenant onboarding)  |
+| POST   | `/register`| 🔓     | Register a company + owner user; returns tokens + refresh cookie |
 | POST   | `/login`   | 🔓     | Authenticate; returns access token + refresh cookie  |
 | GET    | `/refresh` | 🔓(cookie) | Rotate refresh token; returns new access token   |
 | GET    | `/logout`  | 🔓(cookie) | Revoke refresh token, clear cookie               |
@@ -128,7 +134,22 @@ Status → `errorCode` mapping:
 What it does, transactionally: create tenant → create default entitlements → create
 module subscriptions (first selected module is free, others get a 30-day window) →
 create owner user → create `OWNER` / `ADMIN` / `MEMBER` tenant roles → assign OWNER →
-issue tokens.
+issue tokens. The `V7` trigger grants each new tenant role its default `TENANT.*`
+permissions; module permissions are linked for the modules selected at signup.
+
+`200` response: the endpoint returns the same body shape as login
+(access token in the body, refresh token in the `Set-Cookie` header) and the registering
+user's roles/permissions.
+
+```json
+{
+  "userId": "0f4d…",
+  "tenantSlug": "acme",
+  "accessToken": "eyJhbGciOi…",
+  "roles": ["OWNER"],
+  "permissions": ["TENANT.USER.READ", "INVENTORY.MODULE.CRUD", "…"]
+}
+```
 
 **POST `/login`** request body:
 
@@ -144,98 +165,172 @@ issue tokens.
   "tenantSlug": "acme",
   "accessToken": "eyJhbGciOi…",
   "roles": ["OWNER"],
-  "permissions": ["INVENTORY.PRODUCT.CREATE", "…"]
+  "permissions": ["TENANT.USER.READ", "INVENTORY.MODULE.CRUD", "…"]
 }
 ```
 
+Login rejects users whose tenant is not `ACTIVE` with `403 ACCESS_DENIED`. Platform users
+have no tenant and bypass that check.
+
 `GET /refresh` returns `{ "accessToken": "…" }` and sets a new `refresh_token` cookie.
+The cookie uses `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/` and a 14-day `Max-Age`.
+The persisted refresh token itself expires according to
+`security.jwt.refresh-expiration` (7 days in the checked-in configuration).
 
 ---
 
 ## Platform / Super Admin — `/api/1.0/s/admin`
 
-Reserved for platform operators. Controllers are guarded with permission
-authorities such as `@PreAuthorize("hasAuthority('PERM_ERP.ADMIN.READ')")`.
+Reserved for platform operators. Platform users have no tenant (`tenantId` is null) and
+`/api/1.0/s/admin/**` is excluded from `TenantFilter`. Controllers are guarded with
+permission authorities such as `@PreAuthorize("hasAuthority('PERM_ERP.ADMIN.READ')")`.
 
 **Platform admins** (`PlatformAdminController`):
 
-| Method | Path       | Authority               | Description               |
-| ------ | ---------- | ----------------------- | ------------------------- |
-| POST   | `/create`  | `PERM_ERP.ADMIN.CREATE` | Create a platform admin   |
-| GET    | `/admins`  | `PERM_ERP.ADMIN.READ`   | List platform admins      |
+| Method | Path          | Authority                                                   | Description                              |
+| ------ | ------------- | ----------------------------------------------------------- | ---------------------------------------- |
+| POST   | `/create`     | `PERM_ERP.ADMIN.CREATE` or `PERM_ERP.ADMIN.UPDATE`          | Create a platform admin                  |
+| GET    | `/`           | `PERM_ERP.ADMIN.READ`                                       | List platform admins                     |
+| GET    | `/{adminId}`  | `PERM_ERP.ADMIN.READ`                                       | Get a platform admin with roles/permissions |
+| PUT    | `/{adminId}`  | `PERM_ERP.ADMIN.CREATE` or `PERM_ERP.ADMIN.UPDATE`          | Update a platform admin's name fields    |
+
+`POST /create` request body (`roleId` must identify a system role, i.e. a role with a
+null tenant):
+
+```json
+{
+  "username": "platformadmin",
+  "email": "platformadmin@example.com",
+  "password": "S3cret!pass",
+  "firstName": "Awa",
+  "lastName": "Ngu",
+  "roleId": "<system-role-uuid>"
+}
+```
+
+`POST /create` returns `201 Created` with a plain-text confirmation. `PUT /{adminId}`
+accepts only names:
+
+```json
+{ "firstName": "Awa", "lastName": "Ngu" }
+```
+
+`GET /{adminId}` returns the admin plus assigned roles and permissions:
+
+```json
+{
+  "id": "<user-uuid>",
+  "username": "platformadmin",
+  "email": "platformadmin@example.com",
+  "firstName": "Awa",
+  "lastName": "Ngu",
+  "status": "ACTIVE",
+  "lastLogin": "2026-11-03T09:15:22Z",
+  "createdAt": "2026-10-12T09:15:22Z",
+  "createBy": "PRODIGO_ERP_API",
+  "roles": [
+    { "id": "<role-uuid>", "name": "SUPER_ADMIN", "description": "Platform super administrator", "createdAt": "2026-10-12T09:00:00Z" }
+  ],
+  "permissions": [
+    { "id": "<permission-uuid>", "code": "ERP.ADMIN.READ", "description": "View platform administrators", "action": "READ", "resource": "ADMIN" }
+  ]
+}
+```
 
 **Modules** (`AdminModuleController`):
 
-| Method | Path | Authority* | Description                              |
-| ------ | ---- | ---------- | ---------------------------------------- |
-| POST   | `/modules/` | `ERP.MODULE.CREATE` (planned) | Register a module + its permissions |
+| Method | Path        | Authority* | Description                                      |
+| ------ | ----------- | ---------- | ------------------------------------------------ |
+| POST   | `/modules/` | none       | Register a module + its permissions; returns a plain-text `200` |
+
+\* `AdminModuleController` does not declare an authority guard yet; the request still
+requires a valid JWT because `/api/1.0/**` is authenticated by path security.
+
+`POST /modules/` body:
+
+```json
+{
+  "name": "CRM",
+  "description": "Customer relationship management",
+  "moduleKey": "CRM",
+  "price": 0,
+  "createPermissions": [
+    { "description": "View customers", "moduleKey": "CRM", "action": "READ", "resource": "CUSTOMER" }
+  ]
+}
+```
 
 **Permissions** (`PlatformPermissionController`):
 
-| Method | Path                          | Description               |
-| ------ | ----------------------------- | ------------------------- |
-| GET    | `/permissions`                | List all permissions      |
-| GET    | `/permissions/{permissionId}` | Get a permission (by UUID)|
-| POST   | `/permissions`                | Create a permission       |
-| PUT    | `/permissions/{permissionId}` | Update a permission       |
-| DELETE | `/permissions/{permissionId}` | Delete a permission       |
+| Method | Path                          | Authority                                                   | Description               |
+| ------ | ----------------------------- | ----------------------------------------------------------- | ------------------------- |
+| GET    | `/permissions`                | `PERM_ERP.PERMISSION.READ`                                   | List all permissions      |
+| GET    | `/permissions/{permissionId}` | `PERM_ERP.PERMISSION.READ`                                   | Get a permission (by UUID)|
+| POST   | `/permissions`                | `PERM_ERP.PERMISSION.CREATE` or `PERM_ERP.PERMISSION.UPDATE` | Create a permission       |
+| PUT    | `/permissions/{permissionId}` | `PERM_ERP.PERMISSION.CREATE` or `PERM_ERP.PERMISSION.UPDATE` | Update a permission       |
+| DELETE | `/permissions/{permissionId}` | `PERM_ERP.PERMISSION.DELETE`                                 | Delete a permission       |
 
 **Roles** (`PlatformRoleController`):
 
-| Method | Path                                        | Description                         |
-| ------ | ------------------------------------------- | ----------------------------------- |
-| GET    | `/roles`                                    | List system roles                   |
-| GET    | `/roles/{roleId}`                           | Get a system role                   |
-| POST   | `/roles`                                    | Create a system role                |
-| PUT    | `/roles/{roleId}`                           | Update a system role                |
-| DELETE | `/roles/{roleId}`                           | Delete a system role                |
-| GET    | `/tenants/{tenantId}/roles`                 | Read-only: list a tenant's roles    |
-| GET    | `/tenants/{tenantId}/roles/{roleId}`        | Read-only: get a tenant role        |
+| Method | Path                                        | Authority*                          | Description                         |
+| ------ | ------------------------------------------- | ----------------------------------- | ----------------------------------- |
+| GET    | `/roles`                                    | class-level guard                   | List system roles                   |
+| GET    | `/roles/{roleId}`                           | class-level guard                   | Get a system role                   |
+| POST   | `/roles`                                    | `PERM_ERP.ROLE.CREATE` or `...UPDATE` | Create a system role              |
+| PUT    | `/roles/{roleId}`                           | `PERM_ERP.ROLE.CREATE` or `...UPDATE` | Update a system role              |
+| DELETE | `/roles/{roleId}`                           | `PERM_ERP.ROLE.DELETE`              | Delete a system role                |
+| GET    | `/tenants/{tenantId}/roles`                 | `PERM_ERP.USER.READ`                | Read-only: list a tenant's roles    |
+| GET    | `/tenants/{tenantId}/roles/{roleId}`        | `PERM_ERP.USER.READ`                | Read-only: get a tenant role        |
+
+\* The class-level guard is
+`@PreAuthorize("hasRole('PERM_ERP.ROLE.READ')")`. `hasRole` adds the `ROLE_` prefix, so
+this currently checks `ROLE_PERM_ERP.ROLE.READ` instead of the intended
+`PERM_ERP.ROLE.READ` authority; see [Known gaps](./ROADMAP.md#known-gaps).
 
 **Role permissions** (`PlatformRolePermissionController`):
 
-| Method | Path                                       | Description                  |
-| ------ | ------------------------------------------ | ---------------------------- |
-| GET    | `/roles/{roleId}/permissions`              | List permissions of a role   |
-| POST   | `/roles/{roleId}/permissions/{permissionId}` | Assign permission to a role |
-| DELETE | `/roles/{roleId}/permissions/{permissionId}` | Revoke permission from role |
+| Method | Path                                       | Authority*                                                       | Description                  |
+| ------ | ------------------------------------------ | ---------------------------------------------------------------- | ---------------------------- |
+| GET    | `/roles/{roleId}/permissions`              | `PERM_ERP.PERMISSION.ASSIGN` or `PERM_ERP.PERMISSION.REVOKE`     | List permissions of a role   |
+| POST   | `/roles/{roleId}/permissions/{permissionId}` | same class-level guard                                         | Assign permission to a role  |
+| DELETE | `/roles/{roleId}/permissions/{permissionId}` | same class-level guard                                         | Revoke permission from role  |
 
-\* `AdminModuleController` does not yet declare an authority guard.
+\* The class-level guard applies to all three operations.
 
 ---
 
 ## Tenant RBAC — `/api/1.0/roles` & `/api/1.0/permissions`
 
-Tenant-scoped role and permission management (currently unguarded; `@PreAuthorize`
-annotations are present but commented out pending the permission catalog rollout).
+Tenant-scoped role and permission management. Callers need the corresponding `TENANT.*`
+authorities seeded in `V6`; default tenant roles receive them from the `V7` trigger.
 
 **Roles** (`TenantRoleController`):
 
-| Method | Path              | Description         |
-| ------ | ----------------- | ------------------- |
-| GET    | `/roles`          | List tenant roles   |
-| GET    | `/roles/{roleId}` | Get a tenant role   |
-| POST   | `/roles`          | Create a tenant role|
-| PUT    | `/roles/{roleId}` | Update a tenant role|
-| DELETE | `/roles/{roleId}` | Delete a tenant role|
+| Method | Path              | Authority                                                            | Description          |
+| ------ | ----------------- | -------------------------------------------------------------------- | -------------------- |
+| GET    | `/roles`          | `PERM_TENANT.ROLE.READ`                                              | List tenant roles    |
+| GET    | `/roles/{roleId}` | `PERM_TENANT.ROLE.READ`                                              | Get a tenant role    |
+| POST   | `/roles`          | `PERM_TENANT.ROLE.CREATE` or `PERM_TENANT.ROLE.UPDATE`               | Create a tenant role |
+| PUT    | `/roles/{roleId}` | `PERM_TENANT.ROLE.CREATE` or `PERM_TENANT.ROLE.UPDATE`               | Update a tenant role |
+| DELETE | `/roles/{roleId}` | `PERM_TENANT.ROLE.DELETE`                                            | Delete a tenant role |
 
 **Role permissions** (`TenantRolePermissionController`):
 
-| Method | Path                                       | Description                 |
-| ------ | ------------------------------------------ | --------------------------- |
-| GET    | `/roles/{roleId}/permissions`              | List a role's permissions   |
-| POST   | `/roles/{roleId}/permissions/{permissionId}` | Assign permission          |
-| DELETE | `/roles/{roleId}/permissions/{permissionId}` | Revoke permission          |
+| Method | Path                                         | Authority*                                                  | Description                 |
+| ------ | -------------------------------------------- | ----------------------------------------------------------- | --------------------------- |
+| GET    | `/roles/{rolesId}/permissions`               | `PERM_TENANT.ROLE.READ_ASSIGNMENTS`                         | List a role's permissions   |
+| POST   | `/roles/{rolesId}/permissions/{permissionId}`| `PERM_TENANT.ROLE.ASSIGN` or `PERM_TENANT.ROLE.REVOKE`      | Assign permission           |
+| DELETE | `/roles/{rolesId}/permissions/{permissionId}`| `PERM_TENANT.ROLE.ASSIGN` or `PERM_TENANT.ROLE.REVOKE`      | Revoke permission           |
 
-> ⚠️ The route template is `{rolesId}` while the handler binds `roleId`; see
-> [Known gaps](../README.md#known-gaps--next-steps).
+> ⚠️ The route template is `{rolesId}` while the handler binds `roleId`; these endpoints
+> currently fail at runtime. See [Known gaps](./ROADMAP.md#known-gaps).
 
 **Permissions** (`TenantPermissionController`):
 
-| Method | Path                          | Description                  |
-| ------ | ----------------------------- | ---------------------------- |
-| GET    | `/permissions`                | List permissions             |
-| GET    | `/permissions/{permissionId}` | Get a permission by UUID     |
+| Method | Path                          | Authority                       | Description                  |
+| ------ | ----------------------------- | ------------------------------- | ---------------------------- |
+| GET    | `/permissions`                | `PERM_TENANT.PERMISSION.READ`   | List tenant-assignable permissions |
+| GET    | `/permissions/{permissionId}` | `PERM_TENANT.PERMISSION.READ`   | Get a tenant-assignable permission |
 
 Payloads:
 
@@ -262,7 +357,7 @@ Payloads:
 
 | Method | Path                     | Description                                            |
 | ------ | ------------------------ | ------------------------------------------------------ |
-| GET    | `/tenant/modules`        | Modules the current tenant is subscribed to            |
+| GET    | `/tenant/modules/`       | Modules the current tenant is subscribed to            |
 | GET    | `/tenant/modules/available` | Modules the tenant does not yet own                 |
 | GET    | `/tenant/modules/{moduleKey}` | Module details + the permissions it owns         |
 
@@ -315,19 +410,32 @@ built as `<MODULE_KEY>.<RESOURCE>.<ACTION>`.
 | `HR`        | Human Resources| `HR.EMPLOYEE.*`, `HR.DEPARTMENT.*`, `HR.POSITION.*`, `HR.LEAVE.*`, `HR.ATTENDANCE.*`, `HR.PAYROLL.*`, `HR.MODULE.CRUD` |
 | `INVENTORY` | Inventory      | `INVENTORY.PRODUCT.*`, `INVENTORY.CATEGORY.*`, `INVENTORY.WAREHOUSE.*`, `INVENTORY.STOCK.READ/ADJUST`, `INVENTORY.STOCK_MOVEMENT.*`, `INVENTORY.SUPPLIER.*`, `INVENTORY.MODULE.CRUD` |
 
-Platform (`ERP.*`) permissions seeded in `V2` cover `ADMIN`, `USER`, `ROLE`,
+Platform (`ERP.*`) permissions seeded in `V2` and `V6` cover `ADMIN`, `USER`, `ROLE`,
 `PERMISSION`, `SYSTEM`, `TENANT`, `MODULE`, `SUBSCRIPTION`, `ENTITLEMENT`, `BILLING`,
-`PAYMENT`, `INVOICE`.
+`PAYMENT`, `INVOICE`, plus `AUTH`, `SESSION`, `INVITATION`, `API_KEY`, `SECURITY` and
+`AUDIT`.
+
+Tenant-scoped (`TENANT.*`) permissions seeded in `V6` cover authentication/account
+lifecycle, profile, users, roles, permissions, policies, sessions, audit, security and
+company settings. They are tenant-assignable, and the `V7` trigger grants defaults to new
+tenant roles:
+
+- `OWNER` — all `TENANT.*` permissions.
+- `ADMIN` — all `TENANT.*` permissions except company-level settings updates.
+- `MEMBER` — end-user subset (auth/profile/session-own, company read, role/permission read).
 
 Roles:
 
-- **System:** `SUPER_ADMIN` (grants all `ERP.*`).
+- **System:** `SUPER_ADMIN` (all `ERP.*`), `PLATFORM_ADMIN` (all `ERP.*` except
+  destructive/maintenance operations) and `PLATFORM_AUDITOR` (read-only).
 - **Per tenant (created at signup):** `OWNER`, `ADMIN`, `MEMBER`.
-- Planned standard roles also include `Member` and `Admin`; system roles cannot be deleted.
+- System roles can be deleted only while unassigned; tenant default roles cannot be
+  deleted. The `<MODULE_KEY>.MODULE.CRUD` permission is additionally linked to
+  `OWNER`/`ADMIN` for the modules the tenant subscribed to.
 
 Future ERP modules (planned): `CRM`, `SALES`, `INVOICING`, `PAYMENTS`, `POS`,
 `PROJECTS`, `ECOMMERCE`, `REPORTING`.
 
 ---
 
-Back to the [`README`](../README.md).
+Back to the [documentation index](./README.md).
