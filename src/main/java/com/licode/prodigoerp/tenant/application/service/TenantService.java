@@ -4,6 +4,7 @@ import com.licode.prodigoerp.tenant.application.port.input.CreateTenantUseCase;
 import com.licode.prodigoerp.tenant.application.port.output.SaveTenantPort;
 import com.licode.prodigoerp.tenant.application.port.input.command.CreateTenantCommand;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
+import com.licode.prodigoerp.tenant.domain.model.TenantStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,7 @@ public class TenantService implements CreateTenantUseCase {
         tenant.setName(command.companyName());
         tenant.setSlug(command.companySlug());
         tenant.setCountry(command.country());
-        tenant.setStatus("ACTIVE");
+        tenant.setStatus(TenantStatus.ACTIVE);
 
         tenant.setCreatedAt(now);
         tenant.setUpdatedAt(now);

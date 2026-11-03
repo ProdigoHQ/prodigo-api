@@ -5,6 +5,7 @@ import com.licode.prodigoerp.module.application.port.input.ModuleSubscriptionUse
 import com.licode.prodigoerp.module.application.port.output.ModuleSubscriptionCreatePort;
 import com.licode.prodigoerp.module.application.port.input.command.CreateModuleSubscriptionCommand;
 import com.licode.prodigoerp.module.domain.model.ModuleSubscription;
+import com.licode.prodigoerp.module.domain.model.SubscriptionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class ModuleSubscriptionService implements ModuleSubscriptionUseCase {
         moduleSubscription.setId(null);
         moduleSubscription.setModule(createModuleSubscriptionCommand.module());
         moduleSubscription.setTenant(createModuleSubscriptionCommand.tenant());
-        moduleSubscription.setStatus("ACTIVE");
+        moduleSubscription.setStatus(SubscriptionStatus.ACTIVE);
         moduleSubscription.setIsFree(createModuleSubscriptionCommand.isFree());
 
         // TODO: Currency and price need to depend on the Country of the user

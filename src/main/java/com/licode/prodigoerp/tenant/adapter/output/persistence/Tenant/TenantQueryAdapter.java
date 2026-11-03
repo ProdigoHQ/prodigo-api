@@ -2,6 +2,7 @@ package com.licode.prodigoerp.tenant.adapter.output.persistence.Tenant;
 
 import com.licode.prodigoerp.tenant.application.port.output.TenantQueryPort;
 import com.licode.prodigoerp.tenant.domain.model.Tenant;
+import com.licode.prodigoerp.tenant.domain.model.TenantStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -35,6 +36,6 @@ public class TenantQueryAdapter implements TenantQueryPort {
 
     @Override
     public Boolean existsByIdAndActive(UUID id) {
-        return jpaTenantRepository.existsTenantJpaEntityByIdAndStatus(id ,"ACTIVE");
+        return jpaTenantRepository.existsTenantJpaEntityByIdAndStatus(id, TenantStatus.ACTIVE);
     }
 }

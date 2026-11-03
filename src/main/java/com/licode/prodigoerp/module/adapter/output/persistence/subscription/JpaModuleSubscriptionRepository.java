@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.module.adapter.output.persistence.subscription;
 
+import com.licode.prodigoerp.module.domain.model.SubscriptionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -9,5 +10,5 @@ public interface JpaModuleSubscriptionRepository extends JpaRepository<ModuleSub
 
     List<ModuleSubscriptionJpaEntity> findModuleSubscriptionJpaEntityByTenantJpaEntity_Id(UUID tenantId);
 
-    List<ModuleSubscriptionJpaEntity> findModuleSubscriptionJpaEntityByStatusAndTenantJpaEntity_Id(String status, UUID tenantJpaEntityId);
+    List<ModuleSubscriptionJpaEntity> findModuleSubscriptionJpaEntityByStatusAndTenantJpaEntity_Id(SubscriptionStatus status, UUID tenantJpaEntityId);
 }

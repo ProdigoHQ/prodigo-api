@@ -5,6 +5,7 @@ import com.licode.prodigoerp.auth.application.port.input.internal.SaveUserUseCas
 import com.licode.prodigoerp.auth.application.port.input.command.CreateUserCommand;
 import com.licode.prodigoerp.auth.application.port.output.PasswordEncoderPort;
 import com.licode.prodigoerp.auth.application.port.output.SaveUserPort;
+import com.licode.prodigoerp.auth.domain.model.AccountStatus;
 import com.licode.prodigoerp.auth.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,10 +33,9 @@ public class SaveUserService implements SaveUserUseCase {
         createdUser.setTenant(command.tenant());
         createdUser.setFirstName(command.firstName());
         createdUser.setLastName(command.lastName());
-        createdUser.setStatus("ACTIVE");
+        createdUser.setStatus(AccountStatus.ACTIVE);
         createdUser.setIsSuperAdmin(command.isSuperAdmin());
 
-        createdUser.setLastLogin(now);
         createdUser.setCreatedAt(now);
         createdUser.setUpdatedAt(now);
 

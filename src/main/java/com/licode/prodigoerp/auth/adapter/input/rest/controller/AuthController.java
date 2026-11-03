@@ -10,6 +10,7 @@ import com.licode.prodigoerp.auth.application.port.input.result.RefreshTokenResu
 import com.licode.prodigoerp.auth.application.port.output.*;
 import com.licode.prodigoerp.auth.domain.model.RefreshToken;
 import com.licode.prodigoerp.auth.domain.model.User;
+import com.licode.prodigoerp.tenant.domain.model.TenantStatus;
 import com.licode.prodigoerp.common.exception.NotFoundException;
 import com.licode.prodigoerp.common.config.TenantContext;
 import jakarta.validation.Valid;
@@ -27,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +41,7 @@ public class AuthController {
 
     private final AuthenticationManager  authenticationManager;
     private final LoadUserPort loadUserPort;
+    private final SaveUserPort saveUserPort;
     private final RefreshTokenStorePort refreshTokenStorePort;
     private final TokenGeneratorPort tokenGeneratorPort;
     private final RefreshTokenUseCase refreshTokenUseCase;
@@ -73,13 +76,16 @@ public class AuthController {
         // TODO: need to check if the user's Tenant is active or else cannot login
         // Also consider the path for the super admin (which has no tenant)
         if(user.get().getTenant() != null){
-            String tenantStatus = user.get().getTenant().getStatus();
+            TenantStatus tenantStatus = user.get().getTenant().getStatus();
 
-            if(!tenantStatus.equalsIgnoreCase("ACTIVE")){
+            if(tenantStatus != TenantStatus.ACTIVE){
                 log.error("Tenant with Id: {} is not ACTIVE", user.get().getTenant().getId());
                 throw new AccessDeniedException("Access denied! your Tenant is not ACTIVE, Please contact your administrator.");
             }
         }
+
+        user.get().setLastLogin(Instant.now());
+        saveUserPort.save(user.get());
 
         RefreshToken refreshToken = refreshTokenStorePort.createRefreshToken(user.get());
         String accessToken = tokenGeneratorPort.generateAccessToken(user.get());

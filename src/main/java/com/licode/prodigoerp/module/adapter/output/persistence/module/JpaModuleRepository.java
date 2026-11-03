@@ -1,7 +1,9 @@
 package com.licode.prodigoerp.module.adapter.output.persistence.module;
 
+import com.licode.prodigoerp.module.domain.model.SubscriptionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +24,17 @@ public interface JpaModuleRepository extends JpaRepository<ModuleJpaEntity, UUID
     AND ms.status = 'ACTIVE'
     AND m.module_key = 'STOCK'
     * */
-    @Query("select m from ModuleSubscriptionJpaEntity ms INNER join ModuleJpaEntity m ON ms.moduleJpaEntity.id = m.id where ms.tenantJpaEntity.id = :tenantId and ms.status = 'ACTIVE' AND m.moduleKey = :moduleKey")
-    Optional<ModuleJpaEntity> findModuleByModuleKeyAndTenant_Id(String moduleKey, UUID tenantId);
+    @Query("""
+            select m
+            from ModuleSubscriptionJpaEntity ms
+            inner join ModuleJpaEntity m on ms.moduleJpaEntity.id = m.id
+            where ms.tenantJpaEntity.id = :tenantId
+              and ms.status = :status
+              and m.moduleKey = :moduleKey
+            """)
+    Optional<ModuleJpaEntity> findModuleByModuleKeyAndTenant_Id(
+            @Param("moduleKey") String moduleKey,
+            @Param("tenantId") UUID tenantId,
+            @Param("status") SubscriptionStatus status);
 
 }

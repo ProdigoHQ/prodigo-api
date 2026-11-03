@@ -4,6 +4,7 @@ import com.licode.prodigoerp.module.adapter.output.persistence.module.JpaModuleR
 import com.licode.prodigoerp.module.adapter.output.persistence.module.ModuleJpaEntity;
 import com.licode.prodigoerp.module.adapter.output.persistence.module.ModuleJpaMapper;
 import com.licode.prodigoerp.module.domain.model.Module;
+import com.licode.prodigoerp.module.domain.model.SubscriptionStatus;
 import com.licode.prodigoerp.tenant.application.port.output.TenantModuleQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -21,7 +22,8 @@ public class TenantModuleAdapter implements TenantModuleQueryPort {
 
     @Override
     public List<Module> findAllActiveModulesByTenantId(UUID tenantId) {
-        List<ModuleJpaEntity> allActiveModules = jpaTenantRepository.findModuleByTenantIdWhereStatusIsActive(tenantId);
+        List<ModuleJpaEntity> allActiveModules = jpaTenantRepository.findModuleByTenantIdWhereStatusIsActive(
+                tenantId, SubscriptionStatus.ACTIVE);
 
         return allActiveModules.stream().map(ModuleJpaMapper::toDomainModel).toList();
     }
@@ -35,7 +37,8 @@ public class TenantModuleAdapter implements TenantModuleQueryPort {
 
     @Override
     public Optional<Module> findModuleByModuleKeyAndTenantId(String moduleKey, UUID tenantId) {
-        Optional<ModuleJpaEntity> moduleOptional = jpaModuleRepository.findModuleByModuleKeyAndTenant_Id(moduleKey, tenantId);
+        Optional<ModuleJpaEntity> moduleOptional = jpaModuleRepository.findModuleByModuleKeyAndTenant_Id(
+                moduleKey, tenantId, SubscriptionStatus.ACTIVE);
         return moduleOptional.map(ModuleJpaMapper::toDomainModel);
     }
 }
