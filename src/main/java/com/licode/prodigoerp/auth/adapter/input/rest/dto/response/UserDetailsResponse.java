@@ -1,5 +1,7 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.dto.response;
 
+import com.licode.prodigoerp.auth.domain.model.AccountStatus;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +12,7 @@ public record UserDetailsResponse(
         String email,
         String firstName,
         String lastName,
-        String status,
+        AccountStatus status,
         Instant lastLogin,
         Instant createdAt,
         String createBy,

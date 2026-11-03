@@ -17,7 +17,7 @@ public class User {
     private String password;
     private String firstName;
     private String lastName;
-    private String status;
+    private AccountStatus status;
     private Boolean isSuperAdmin;
     private Instant lastLogin;
     private Instant createdAt;

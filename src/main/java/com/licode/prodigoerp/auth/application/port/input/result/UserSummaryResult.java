@@ -1,5 +1,7 @@
 package com.licode.prodigoerp.auth.application.port.input.result;
 
+import com.licode.prodigoerp.auth.domain.model.AccountStatus;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -9,7 +11,7 @@ public record UserSummaryResult(
         String email,
         String firstName,
         String lastName,
-        String status,
+        AccountStatus status,
         Instant lastLogin,
         Instant createdAt
 ) {

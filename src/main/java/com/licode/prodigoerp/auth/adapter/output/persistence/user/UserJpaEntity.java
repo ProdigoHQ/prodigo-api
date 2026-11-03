@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.auth.adapter.output.persistence.user;
 
+import com.licode.prodigoerp.auth.domain.model.AccountStatus;
 import com.licode.prodigoerp.tenant.adapter.output.persistence.Tenant.TenantJpaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -55,19 +56,18 @@ public class UserJpaEntity {
     @Column(name = "last_name", nullable = false, length = 150)
     private String lastName;
 
-    @Size(max = 20)
     @NotNull
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVE'")
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    private AccountStatus status;
 
     @NotNull
     @ColumnDefault("false")
     @Column(name = "is_super_admin", nullable = false)
     private Boolean isSuperAdmin;
 
-    @NotNull
-    @Column(name = "last_login", nullable = false)
+    @Column(name = "last_login")
     private Instant lastLogin;
 
     @NotNull

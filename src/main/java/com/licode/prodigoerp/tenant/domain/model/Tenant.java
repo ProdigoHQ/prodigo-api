@@ -12,7 +12,7 @@ public class Tenant {
     private String name;
     private String slug;
     private String country;
-    private String status;
+    private TenantStatus status;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;

@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.tenant.adapter.output.persistence.Tenant;
 
+import com.licode.prodigoerp.tenant.domain.model.TenantStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -37,11 +38,11 @@ public class TenantJpaEntity {
     @Column(name = "country", nullable = false, length = 50)
     private String country;
 
-    @Size(max = 20)
     @NotNull
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVE'")
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    private TenantStatus status;
 
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")

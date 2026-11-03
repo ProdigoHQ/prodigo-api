@@ -1,6 +1,7 @@
 package com.licode.prodigoerp.module.adapter.output.persistence.subscription;
 
 import com.licode.prodigoerp.module.adapter.output.persistence.module.ModuleJpaEntity;
+import com.licode.prodigoerp.module.domain.model.SubscriptionStatus;
 import com.licode.prodigoerp.tenant.adapter.output.persistence.Tenant.TenantJpaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -39,11 +40,11 @@ public class ModuleSubscriptionJpaEntity {
     @JoinColumn(name = "module_id", nullable = false)
     private ModuleJpaEntity moduleJpaEntity;
 
-    @Size(max = 30)
     @NotNull
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'ACTIVE'")
     @Column(name = "status", nullable = false, length = 30)
-    private String status;
+    private SubscriptionStatus status;
 
     @NotNull
     @ColumnDefault("false")

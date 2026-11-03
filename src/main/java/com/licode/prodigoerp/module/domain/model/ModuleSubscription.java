@@ -14,7 +14,7 @@ public class ModuleSubscription {
     private UUID id;
     private Tenant  tenant;
     private Module module;
-    private String status;
+    private SubscriptionStatus status;
     private Boolean isFree;
     private BigDecimal price;
     private String currency;
