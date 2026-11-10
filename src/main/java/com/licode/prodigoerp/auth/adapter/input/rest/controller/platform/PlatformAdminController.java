@@ -1,6 +1,7 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.CreateAdminRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.UpdateUserStatusRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.UpdateUserRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserDetailsResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserSummaryResponse;
@@ -8,6 +9,7 @@ import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthRestMapper;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.UserRestMapper;
 import com.licode.prodigoerp.auth.application.port.input.PlatformAdminQueryUseCase;
 import com.licode.prodigoerp.auth.application.port.input.RegisterPlatformAdminUseCase;
+import com.licode.prodigoerp.auth.domain.model.AccountStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -63,5 +65,22 @@ public class PlatformAdminController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 registerPlatformAdminUseCase.update(adminId, userRestMapper.toUpdatedUserCommand(updateUserRequest))
         );
+    }
+
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.CREATE')")
+    @PatchMapping(value = "/{adminId}/status", version = "1.0")
+    public ResponseEntity<String> updatePlatformAdminStatus(@PathVariable UUID adminId, @Valid @RequestBody UpdateUserStatusRequest status) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                registerPlatformAdminUseCase.status(adminId, userRestMapper.toUpdateUserStatusCommand(status))
+        );
+    }
+
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.ADMIN.UPDATE', 'PERM_ERP.ADMIN.CREATE')")
+    @DeleteMapping(value = "/{adminId}", version = "1.0")
+    public ResponseEntity<String> deletePlatformAdmin(@PathVariable UUID adminId) {
+        registerPlatformAdminUseCase.status(adminId, userRestMapper.toUpdateUserStatusCommand(new UpdateUserStatusRequest(AccountStatus.DEACTIVATED)));
+
+        return ResponseEntity.status(HttpStatus.OK).body("The account has been deactivated successfully");
     }
 }

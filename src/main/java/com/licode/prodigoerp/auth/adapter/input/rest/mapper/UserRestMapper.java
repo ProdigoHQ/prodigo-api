@@ -1,10 +1,12 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.mapper;
 
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.UpdateUserRequest;
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.UpdateUserStatusRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.PermissionSummaryResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.RoleSummaryResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserDetailsResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.UserSummaryResponse;
+import com.licode.prodigoerp.auth.application.port.input.command.UpdateUserStatusCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.UpdatedUserCommand;
 import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 import com.licode.prodigoerp.auth.application.port.input.result.RoleSummaryResult;
@@ -20,5 +22,6 @@ public interface UserRestMapper {
     PermissionSummaryResponse toPermissionSummaryResponse(PermissionSummaryResult result);
     UserDetailsResponse toUserDetailsResponse(UserDetailsResult result);
     UpdatedUserCommand toUpdatedUserCommand(UpdateUserRequest updateUserRequest);
+    UpdateUserStatusCommand toUpdateUserStatusCommand(UpdateUserStatusRequest updateUserStatusRequest);
 
 }

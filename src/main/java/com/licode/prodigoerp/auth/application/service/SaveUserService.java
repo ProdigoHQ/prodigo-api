@@ -55,4 +55,14 @@ public class SaveUserService implements SaveUserUseCase {
 
         return saveUserPort.save(user);
     }
+
+    @Override
+    public User status(AccountStatus newStatus, User user, String author) {
+
+        user.setStatus(newStatus);
+        user.setUpdatedAt(Instant.now());
+        user.setUpdatedBy(author);
+
+        return saveUserPort.save(user);
+    }
 }
