@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/{version}/s/admin")
-@PreAuthorize("hasRole('PERM_ERP.ROLE.READ')")
+@PreAuthorize("hasAuthority('PERM_ERP.ROLE.READ')")
 @RequiredArgsConstructor
 public class PlatformRoleController {
 
