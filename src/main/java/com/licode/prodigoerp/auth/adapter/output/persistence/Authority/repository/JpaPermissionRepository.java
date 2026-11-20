@@ -17,5 +17,6 @@ public interface JpaPermissionRepository extends JpaRepository<PermissionJpaEnti
     Optional<PermissionJpaEntity> findPermissionJpaEntityByCodeAndResource(String code, String resource);
     List<PermissionJpaEntity> findAllByCodeIn(Collection<String> codes);
     List<PermissionJpaEntity> findAllByCodeStartingWith(String prefix);
+    List<PermissionJpaEntity> findAllByIdIn(Collection<UUID> ids);
     List<PermissionJpaEntity> findAllByTenantAssignableTrueOrderByCodeAsc();
 }

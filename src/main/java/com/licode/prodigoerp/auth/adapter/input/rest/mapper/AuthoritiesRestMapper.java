@@ -1,10 +1,12 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.mapper;
 
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.AssignSysPermissionsRoleRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.CreatePermissionRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.SaveRoleRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.UpdatePermissionRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.PermissionSummaryResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.RoleDetailsResponse;
+import com.licode.prodigoerp.auth.application.port.input.command.AssignSysPermissionsRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.CreatePermissionCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.SaveRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.UpdatePermissionCommand;
@@ -30,4 +32,6 @@ public interface AuthoritiesRestMapper {
     RoleDetailsResponse toRoleDetailsResponse(RoleDetailsResult result);
 
     List<RoleDetailsResponse> toRoleDetailsResponses(List<RoleDetailsResult> results);
+
+    AssignSysPermissionsRoleCommand toAssignSysPermissionsRoleCommand(AssignSysPermissionsRoleRequest request);
 }

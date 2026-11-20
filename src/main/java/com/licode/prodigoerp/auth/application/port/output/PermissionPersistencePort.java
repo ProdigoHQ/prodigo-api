@@ -20,6 +20,7 @@ public interface PermissionPersistencePort {
     List<Permission> findPermissionsByModuleKey(String moduleKey);
     List<String> findActivePermissionCodes(UUID userId);
     List<Permission> findAll();
+    List<Permission> findAllByIds(Collection<UUID> permissionIds);
     List<Permission> findAllTenantAssignable();
 
     boolean existsByCode(String code);
