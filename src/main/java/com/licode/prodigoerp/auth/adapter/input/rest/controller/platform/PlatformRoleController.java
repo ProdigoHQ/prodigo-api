@@ -61,7 +61,7 @@ public class PlatformRoleController {
 
 
     @PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.ASSIGN', 'PERM_ERP.PERMISSION.REVOKE')")
-    @PatchMapping(value = "roles/{roleId}/", version = "1.0")
+    @PatchMapping(value = "roles/{roleId}", version = "1.0")
     public ResponseEntity<String> grant(@PathVariable UUID roleId, @Valid @RequestBody AssignSysPermissionsRoleRequest request){
         return ResponseEntity.ok().body(
                 rolePermissionUseCase.sync(roleId, mapper.toAssignSysPermissionsRoleCommand(request))
