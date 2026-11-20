@@ -21,7 +21,6 @@ public interface PermissionPersistencePort {
     List<String> findActivePermissionCodes(UUID userId);
     List<Permission> findAll();
     List<Permission> findAllTenantAssignable();
-    List<Permission> findPermissionsByRoleId(UUID roleId);
 
     boolean existsByCode(String code);
     boolean isAssignedToAnyRole(UUID permissionId);

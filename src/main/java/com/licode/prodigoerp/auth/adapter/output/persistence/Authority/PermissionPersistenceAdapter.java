@@ -99,17 +99,7 @@ public class PermissionPersistenceAdapter implements PermissionPersistencePort {
                 .map(PermissionJpaMapper::toDomainModel)
                 .toList();
     }
-
-    @Override
-    public List<Permission> findPermissionsByRoleId(UUID roleID) {
-
-        List<PermissionJpaEntity> permissionJpaEntityList = jpaRolePermissionRepository.findRolePermissionJpaEntitiesByRoleJpaEntity_Id(roleID);
-
-        return permissionJpaEntityList.stream().map(
-                PermissionJpaMapper::toDomainModel
-        ).toList();
-    }
-
+    
     @Override
     public boolean isAssignedToAnyRole(UUID permissionId) {
         return jpaRolePermissionRepository.existsByPermissionJpaEntity_Id(permissionId);
