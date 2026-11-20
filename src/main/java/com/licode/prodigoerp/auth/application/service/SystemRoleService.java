@@ -2,6 +2,7 @@ package com.licode.prodigoerp.auth.application.service;
 
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.port.input.SystemRoleUseCase;
+import com.licode.prodigoerp.auth.application.port.input.command.AssignSysPermissionsRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.command.SaveRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.query.GetRoleDetailsQuery;
 import com.licode.prodigoerp.auth.application.port.input.query.GetTenantRoleDetailsQuery;

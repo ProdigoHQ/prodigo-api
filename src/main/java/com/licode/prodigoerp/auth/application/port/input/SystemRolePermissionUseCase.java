@@ -1,5 +1,6 @@
 package com.licode.prodigoerp.auth.application.port.input;
 
+import com.licode.prodigoerp.auth.application.port.input.command.AssignSysPermissionsRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.query.ListRolePermissionsQuery;
 import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 
@@ -10,4 +11,7 @@ public interface SystemRolePermissionUseCase {
     List<PermissionSummaryResult> list(ListRolePermissionsQuery query);
     void assign(UUID roleId, UUID permissionId);
     void remove(UUID roleId, UUID permissionId);
+
+    // This function will both assign and revoke depending if the permissions are present or not
+    String sync(UUID roleId, AssignSysPermissionsRoleCommand permissionIds);
 }

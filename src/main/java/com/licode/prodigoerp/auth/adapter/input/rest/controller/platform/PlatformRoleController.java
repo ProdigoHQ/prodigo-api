@@ -1,8 +1,10 @@
 package com.licode.prodigoerp.auth.adapter.input.rest.controller.platform;
 
+import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.AssignSysPermissionsRoleRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.request.SaveRoleRequest;
 import com.licode.prodigoerp.auth.adapter.input.rest.dto.response.RoleDetailsResponse;
 import com.licode.prodigoerp.auth.adapter.input.rest.mapper.AuthoritiesRestMapper;
+import com.licode.prodigoerp.auth.application.port.input.SystemRolePermissionUseCase;
 import com.licode.prodigoerp.auth.application.port.input.SystemRoleUseCase;
 import com.licode.prodigoerp.auth.application.port.input.query.GetRoleDetailsQuery;
 import com.licode.prodigoerp.auth.application.port.input.query.GetTenantRoleDetailsQuery;
@@ -26,6 +28,7 @@ public class PlatformRoleController {
 
     private final AuthoritiesRestMapper  mapper;
     private final SystemRoleUseCase useCase;
+    private final SystemRolePermissionUseCase rolePermissionUseCase;
 
     // Get system roles
     @GetMapping(value = "/roles", version = "1.0")
@@ -54,6 +57,15 @@ public class PlatformRoleController {
     public ResponseEntity<RoleDetailsResponse> update(@PathVariable UUID roleId, @Valid @RequestBody SaveRoleRequest request){
 
         return ResponseEntity.ok().body(mapper.toRoleDetailsResponse(useCase.update(roleId, mapper.toSaveRoleCommand(request))));
+    }
+
+
+    @PreAuthorize("hasAnyAuthority('PERM_ERP.PERMISSION.ASSIGN', 'PERM_ERP.PERMISSION.REVOKE')")
+    @PatchMapping(value = "roles/{roleId}/", version = "1.0")
+    public ResponseEntity<String> grant(@PathVariable UUID roleId, @Valid @RequestBody AssignSysPermissionsRoleRequest request){
+        return ResponseEntity.ok().body(
+                rolePermissionUseCase.sync(roleId, mapper.toAssignSysPermissionsRoleCommand(request))
+        );
     }
 
     @PreAuthorize("hasAuthority('PERM_ERP.ROLE.DELETE')")

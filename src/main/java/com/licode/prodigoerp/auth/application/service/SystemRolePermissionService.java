@@ -3,6 +3,7 @@ package com.licode.prodigoerp.auth.application.service;
 import com.licode.prodigoerp.auth.application.helpers.AuthMappings;
 import com.licode.prodigoerp.auth.application.helpers.RolePermissionLinker;
 import com.licode.prodigoerp.auth.application.port.input.SystemRolePermissionUseCase;
+import com.licode.prodigoerp.auth.application.port.input.command.AssignSysPermissionsRoleCommand;
 import com.licode.prodigoerp.auth.application.port.input.query.ListRolePermissionsQuery;
 import com.licode.prodigoerp.auth.application.port.input.result.PermissionSummaryResult;
 import com.licode.prodigoerp.auth.application.port.output.PermissionPersistencePort;
@@ -16,8 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -52,6 +54,58 @@ public class SystemRolePermissionService implements SystemRolePermissionUseCase 
     @Override
     public void remove(UUID roleId, UUID permissionId) {
         linker.unlink(loadRole(roleId), loadPermission(permissionId));
+    }
+
+    @Override
+    public String sync(UUID roleId,  AssignSysPermissionsRoleCommand command) {
+        Role role = loadRole(roleId);
+
+        Set<UUID> requestedIds = new HashSet<>(command.permissionIds());
+
+        List<Permission> currentPermissions = rolePort.findPermissionsByRoleId(roleId);
+
+        Map<UUID, Permission> currentPermissionsById = currentPermissions.stream()
+                .collect(Collectors.toMap(Permission::getId, Function.identity()));
+
+        Set<UUID> currentPermissionIds = currentPermissionsById.keySet();
+
+        Set<UUID> toAssignIds = new LinkedHashSet<>(requestedIds);
+        toAssignIds.removeAll(currentPermissionIds);
+
+        Set<UUID> toRevokeIds = new LinkedHashSet<>(currentPermissionIds);
+        toRevokeIds.removeAll(requestedIds);
+
+        List<Permission> permissionsToAssign =
+                permissionPort.findAllByIds(toAssignIds);
+
+        // Validate that every requested permission exists.
+        Set<UUID> foundIds = permissionsToAssign.stream()
+                .map(Permission::getId)
+                .collect(Collectors.toSet());
+
+        if (!foundIds.containsAll(toAssignIds)) {
+            Set<UUID> missingIds = new HashSet<>(toAssignIds);
+            missingIds.removeAll(foundIds);
+
+            throw new NotFoundException(
+                    "Permissions not found: " + missingIds
+            );
+        }
+
+        // Apply additions.
+        String actor = currentUser.usernameOrSystem();
+
+        for (Permission permission : permissionsToAssign) {
+            linker.link(role, permission, actor);
+        }
+
+        // Apply revocations.
+        for (UUID permissionId : toRevokeIds) {
+            linker.unlink(role, currentPermissionsById.get(permissionId));
+        }
+
+        log.info("The Role: {}'s permissions was modified by {}", roleId, actor);
+        return "Role's permissions was modified by successfully";
     }
 
     // private helper functions
